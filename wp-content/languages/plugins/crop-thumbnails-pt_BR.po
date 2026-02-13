@@ -1,0 +1,266 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Crop Thumbnails\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-06-02 18:18+0000\n"
+"PO-Revision-Date: 2021-06-02 19:54+0000\n"
+"Last-Translator: \n"
+"Language-Team: Brazilian Portuguese\n"
+"Language: pt-BR\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Loco-Source-Locale: pt_BR\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.5.2; wp-5.7.2\n"
+"X-Domain: crop-thumbnails\n"
+"X-Loco-Parser: loco_parse_po"
+
+#: functions/save.php:103
+msgid "Can't copy temporary file to media library."
+msgstr ""
+
+#: functions/save.php:107
+msgid "Can't delete temporary file."
+msgstr ""
+
+#: functions/save.php:95
+#, php-format
+msgid "Can't generate filesize '%s'."
+msgstr ""
+
+#: functions/settingsscreen.php:100
+msgid ""
+"Choose the image sizes you do not want to show, if the user uses the button "
+"below the featured image box."
+msgstr ""
+
+#: functions/backendpreparer.php:79 functions/backendpreparer.php:80 
+#: functions/backendpreparer.php:135 functions/backendpreparer.php:136 
+#: functions/backendpreparer.php:182 functions/backendpreparer.php:182 
+#: functions/backendpreparer.php:243 functions/backendpreparer.php:244
+msgid "Crop Featured Image"
+msgstr "Recorte de Imagens"
+
+#: functions/settingsscreen.php:34
+msgid "Crop Post Thumbnail Page"
+msgstr ""
+
+#. Name of the plugin
+msgid "Crop Thumbnails"
+msgstr ""
+
+#: functions/settingsscreen.php:122
+msgid ""
+"Crop-Thumbnails is designed to make cropping images easy. For some post "
+"types, not all crop sizes are needed, but the plugin will automatically "
+"create all the crop sizes. Here you can select which crop sizes are "
+"available in the cropping interface for each post type.."
+msgstr ""
+
+#: functions/settingsscreen.php:123
+msgid ""
+"Crop-Thumbnails will only show cropped images. Sizes with no crop will "
+"always be hidden."
+msgstr ""
+
+#: functions/editor.php:80
+msgid "cropped"
+msgstr ""
+
+#: functions/editor.php:64
+msgid "Cropping is disabled for this post-type."
+msgstr ""
+
+#: functions/save.php:363
+msgid "Cropping to these dimensions on this image is not possible."
+msgstr ""
+
+#: functions/editor.php:77
+msgid "deselect all"
+msgstr "desmarcar todas"
+
+#: functions/settingsscreen.php:87
+msgid "Developer Settings"
+msgstr ""
+
+#: functions/editor.php:78
+msgid "Dimensions:"
+msgstr "Dimensões:"
+
+#: functions/editor.php:74
+msgid "Do nothing"
+msgstr "Nenhuma Ação"
+
+#: functions/settingsscreen.php:91
+msgid "Enable Data-Debug."
+msgstr ""
+
+#: functions/settingsscreen.php:89
+msgid "Enable JS-Debug."
+msgstr ""
+
+#: functions/save.php:40
+msgid "ERROR: Can't find original image file!"
+msgstr "ERRO: Não foi encontrado a imagem original!"
+
+#: functions/save.php:370
+msgid "ERROR: Can't find original image in database!"
+msgstr "ERRO: Não foi encontrado a imagem original do bando de dados!"
+
+#: functions/save.php:46
+msgid "ERROR: Can't find original image metadata!"
+msgstr "ERRO: Não foi encontrado os metadatas da imagem!"
+
+#: functions/save.php:334
+msgid "ERROR: Security Check failed (maybe a timeout - please try again)."
+msgstr ""
+
+#: functions/save.php:339 functions/save.php:345 functions/save.php:353
+msgid "ERROR: Submitted data is incomplete."
+msgstr ""
+
+#: functions/editor.php:76
+msgid "Group together"
+msgstr ""
+
+#: functions/settingsscreen.php:101
+msgid "Hide Crop-Thumbnails button below the featured image?"
+msgstr ""
+
+#. URI of the plugin
+msgid "https://wordpress.org/extend/plugins/crop-thumbnails/"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://www.totalmedial.de"
+msgstr ""
+
+#: functions/editor.php:73
+msgid "Images with same ratio"
+msgstr "Imagens com a mesma proporção"
+
+#: functions/editor.php:86
+msgid "No image sizes for cropping available."
+msgstr ""
+
+#: functions/editor.php:82
+msgid "Not yet cropped by WordPress."
+msgstr "Esta imagem ainda não foi recortada pelo sistema."
+
+#: functions/editor.php:81
+msgid "Original image size too small for good crop quality!"
+msgstr ""
+"O tamanho da imagem original é muito pequeno para uma boa qualidade de corte!"
+
+#: functions/editor.php:67
+msgid "pixel"
+msgstr ""
+
+#: functions/editor.php:65
+msgid "Please wait until the images are cropped."
+msgstr "Aguarde até que as imagens sejam cortadas."
+
+#: functions/settingsscreen.php:84
+msgid "Plugin Test"
+msgstr "Testar o plugin"
+
+#: functions/editor.php:68
+msgid "Quick Instructions"
+msgstr "Instruções Rápidas"
+
+#: functions/editor.php:79
+msgid "Ratio:"
+msgstr "Proporção:"
+
+#: functions/editor.php:66
+msgid "Raw"
+msgstr "Original"
+
+#: functions/settingsscreen.php:48 functions/settingsscreen.php:107 
+#: functions/settingsscreen.php:115 functions/settingsscreen.php:140
+msgid "Save Changes"
+msgstr "Salvar Mudanças"
+
+#: functions/editor.php:72
+msgid "Save Crop"
+msgstr "Salvar Recorte"
+
+#: functions/editor.php:75
+msgid "Select together"
+msgstr "Selecione junto"
+
+#: functions/editor.php:87
+msgid "Selected image sizes"
+msgstr "Tamanhos de imagem selecionados"
+
+#: functions/settingsscreen.php:27 functions/settingsscreen.php:41
+msgid "Settings"
+msgstr "Configurações"
+
+#: functions/settingsscreen.php:76
+msgid "Sizes and Post Types"
+msgstr "Tamanhos e Tipos de Posts"
+
+#: functions/editor.php:69
+msgid "Step 1: Choose an image-size from the list."
+msgstr "Passo 1: Escolha um tamanho de imagem na lista."
+
+#: functions/editor.php:70
+msgid "Step 2: Change the selection of the image above."
+msgstr "Passo 2: Mude a seleção da imagem acima."
+
+#: functions/editor.php:71
+msgid "Step 3: Click on \"Save Crop\"."
+msgstr "Passo 3: Clique em \"Salvar Recorte\""
+
+#: functions/settingsscreen.php:53
+msgid "Support the plugin author"
+msgstr ""
+
+#. Description of the plugin
+msgid "The easy way to adjust your cropped image sizes."
+msgstr ""
+
+#: functions/editor.php:84
+msgid "The plugin can not correctly connect to the server."
+msgstr ""
+
+#: functions/editor.php:83
+msgid ""
+"This image has an image orientation value in its exif-metadata. Be aware "
+"that this may result in rotatated or mirrored images on safari ipad / iphone."
+msgstr ""
+
+#: functions/settingsscreen.php:79
+msgid "User Permission"
+msgstr ""
+
+#. Author of the plugin
+msgid "Volkmar Kantor"
+msgstr ""
+
+#: functions/editor.php:63
+msgid ""
+"Warning: the original image is too small to be cropped in good quality with "
+"this thumbnail size."
+msgstr ""
+"Atenção: a imagem original é muito pequena para ser cortada em boa qualidade "
+"com este tamanho de miniatura."
+
+#: functions/settingsscreen.php:81
+msgid ""
+"When active, only users who are able to edit files can crop thumbnails. "
+"Otherwise (default), any user who can upload files can also crop thumbnails."
+msgstr ""
+
+#: functions/editor.php:85 functions/save.php:349
+msgid "You are not permitted to crop the thumbnails."
+msgstr "Você não possui permissão para recortar as imagens."
+
+#: functions/settingsscreen.php:54
+msgid ""
+"You can support the plugin author (and let him know you love this plugin) by "
+"donating via Paypal. Thanks a lot!"
+msgstr ""
