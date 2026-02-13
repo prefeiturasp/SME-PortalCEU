@@ -1,0 +1,19 @@
+version: '3.3'
+services:
+    ceu:
+        restart: always
+        env_file:
+            - ../env_ceu
+        container_name: ceu
+        ports:
+            - '8080:80'
+        volumes:
+            - '../nfs/ceu-dev/uploads:/var/www/html/wp-content/uploads'
+            - '../nfs/ceu-dev/plugins:/var/www/html/wp-content/plugins'
+            - '../nfs/ceu-dev/wflogs:/var/www/html/wp-content/wflogs'
+            - '../nfs/ceu-dev/upgrade:/var/www/html/wp-content/upgrade'
+            - '../nfs/ceu-dev/locationmatch:/etc/apache2/locationmatch/location_match.modsecurity'
+        image: wordpress/ceu
+        build: 
+            dockerfile: ./Dockerfile
+            context: . 
