@@ -2960,8 +2960,19 @@ add_action('rest_api_init', function () {
 
 function retornar_eventos_destaques($request) {
     
-	$idPagina = get_field('select_page','conf-api');
-	$destaques = get_field('slide', $idPagina);
+	$idPage = get_field('select_page','conf-api');
+	$layout = get_field('fx_flex_layout', $idPage);
+
+	foreach ($layout as $row) {
+		if ($row['acf_fc_layout'] === 'fx_linha_coluna_1') {
+			foreach ($row['fx_coluna_1_1'] as $col) {
+				if ($col['acf_fc_layout'] === 'slide_destaques') {
+					$destaques = $col['slide'];
+					break 2;
+				}
+			}
+		}
+	}
 	
 	$today = date('Y-m-d'); // Data de hoje
 	$first = date("Y-m-d", strtotime("first day of this month")); // Primeiro da do mes atual
