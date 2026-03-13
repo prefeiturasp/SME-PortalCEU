@@ -577,7 +577,7 @@ do_action( 'edit_form_top', $post );
 		if ( $post_type_object->public ) {
 			$has_sample_permalink = $sample_permalink_html && 'auto-draft' !== $post->post_status;
 			?>
-	<div id="edit-slug-box" class="hide-if-no-js">
+			<div id="edit-slug-box" class="hide-if-no-js">
 			<?php
 			if ( $has_sample_permalink ) {
 				echo $sample_permalink_html;
