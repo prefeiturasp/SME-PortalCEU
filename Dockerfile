@@ -50,7 +50,7 @@ ENV PHP_MAX_EXECUTION_TIME="120"
 # by using pre-defined Docker's environment variables.
 # Learn more: https://code.shin.company/php#customize-docker-image
 
-COPY phpconf/php.ini "/etc/php/7.4/fpm/php.ini"
+COPY phpconf/php.ini "/etc/php/8.3/fpm/php.ini"
 COPY --chown=www-data:www-data . /var/www/html/
 
 #modsecurity
