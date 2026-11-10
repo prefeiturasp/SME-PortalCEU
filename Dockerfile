@@ -1,4 +1,4 @@
-FROM wordpress:php8.3-apache
+FROM registry.sme.prefeitura.sp.gov.br/wordpress/base:8.3.36-apache-trixie
 
 # sets GID and UID
 ENV PUID=33
