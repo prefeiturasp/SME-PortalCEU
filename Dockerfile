@@ -1,4 +1,4 @@
-FROM registry.sme.prefeitura.sp.gov.br/wordpress/base:7.4-fpm-apache
+FROM wordpress:php8.3-apache
 
 # sets GID and UID
 ENV PUID=33
