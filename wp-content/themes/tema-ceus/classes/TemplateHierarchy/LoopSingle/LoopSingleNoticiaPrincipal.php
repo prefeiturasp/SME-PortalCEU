@@ -102,7 +102,7 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 											$dataEvento = $dataInicial;
 															
 											if($dataInicial){
-												$dataEvento = explode("-", $dataInicial);
+												$dataEvento = $dataInicial;
 												$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 												$mes = translateMonth($mes);
 												$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -120,12 +120,15 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 
 									} elseif($datas['tipo_de_data'] == 'semana'){ // se for do tipo semana
 										$semana = $datas['dia_da_semana'];
+										$semana = is_array($semana) ? array_values($semana) : [];
 										
 										
 										$diasSemana = array();
 
+										$show = [];
 										foreach($semana as $dias){
 
+											$dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
 											$total = count($dias['selecione_os_dias']); 
 											$i = 0;
 											$diasShow = '';
@@ -330,7 +333,7 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 																$dataFinal = $data;
 															} else { // Se nao tiver a final mostra apenas a inicial
 																if($dataInicial){
-																	$dataEvento = explode("-", $dataInicial);
+																	$dataEvento = $dataInicial;
 																	$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 																	$mes = translateMonth($mes);
 																	$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -352,9 +355,12 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 															
 															$i = $turma['data'] - 1;
 															$semana = $datas['dia_da_semana'][$i];
+															$semana = is_array($semana) ? array_values($semana) : [];
 															
+															$show = [];
 															foreach($semana as $dias){
 		
+																$dias = is_array($dias) ? $dias : [];
 																$total = count($dias); 
 																$i = 0;
 																$diasShow = '';
@@ -475,6 +481,7 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 					<?php if($tipo_evento == 'serie'): 
 
 						$participantes = get_field('ceus_participantes');
+						$participantes = is_array($participantes) ? array_values($participantes) : [];
 						if($participantes != '') :
 
 							foreach($participantes as $participante):
@@ -539,7 +546,7 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 												$dataFinal = $data;
 											} else { // Se nao tiver a final mostra apenas a inicial
 												if($dataInicial){
-													$dataEvento = explode("-", $dataInicial);
+													$dataEvento = $dataInicial;
 													$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 													$mes = translateMonth($mes);
 													$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -557,12 +564,15 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 
 										} elseif($datas['tipo_de_data'] == 'semana'){ // se for do tipo semana
 											$semana = $datas['dia_da_semana'];
+											$semana = is_array($semana) ? array_values($semana) : [];
 											
 											
 											$diasSemana = array();
 
+											$show = [];
 											foreach($semana as $dias){
 
+												$dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
 												$total = count($dias['selecione_os_dias']); 
 												$i = 0;
 												$diasShow = '';
@@ -820,7 +830,7 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
                                                         $dataFinal = $data;
                                                     } else { // Se nao tiver a final mostra apenas a inicial
                                                         if($dataInicial){
-															$dataEvento = explode("-", $dataInicial);
+															$dataEvento = $dataInicial;
 															$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 															$mes = translateMonth($mes);
 															$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -838,12 +848,15 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 
 												} elseif($datas['tipo_de_data'] == 'semana'){ // se for do tipo semana
 													$semana = $datas['dia_da_semana'];
+													$semana = is_array($semana) ? array_values($semana) : [];
 													
 													
 													$diasSemana = array();
 
+													$show = [];
 													foreach($semana as $dias){
 
+														$dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
 														$total = count($dias['selecione_os_dias']); 
 														$i = 0;
 														$diasShow = '';
@@ -1048,7 +1061,7 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 																			$dataFinal = $data;
 																		} else { // Se nao tiver a final mostra apenas a inicial
 																			if($dataInicial){
-																				$dataEvento = explode("-", $dataInicial);
+																				$dataEvento = $dataInicial;
 																				$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 																				$mes = translateMonth($mes);
 																				$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -1070,9 +1083,12 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 																		
 																		$i = $turma['data'] - 1;
 																		$semana = $datas['dia_da_semana'][$i];
+																		$semana = is_array($semana) ? array_values($semana) : [];
 																		
+																		$show = [];
 																		foreach($semana as $dias){
 					
+																			$dias = is_array($dias) ? $dias : [];
 																			$total = count($dias); 
 																			$i = 0;
 																			$diasShow = '';
@@ -1193,6 +1209,7 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 								<?php if($tipo_evento == 'serie'): 
 
 									$participantes = get_field('ceus_participantes');
+									$participantes = is_array($participantes) ? array_values($participantes) : [];
 									if($participantes != '') :
 
 										foreach($participantes as $participante):
@@ -1258,7 +1275,7 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 														} else { // Se nao tiver a final mostra apenas a inicial
 																														
 															if($dataInicial){
-																$dataEvento = explode("-", $dataInicial);
+																$dataEvento = $dataInicial;
 																$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 																$mes = translateMonth($mes);
 																$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -1276,12 +1293,15 @@ class LoopSingleNoticiaPrincipal extends LoopSingle
 
 													} elseif($datas['tipo_de_data'] == 'semana'){ // se for do tipo semana
 														$semana = $datas['dia_da_semana'];
+														$semana = is_array($semana) ? array_values($semana) : [];
 														
 														
 														$diasSemana = array();
 
+														$show = [];
 														foreach($semana as $dias){
 
+															$dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
 															$total = count($dias['selecione_os_dias']); 
 															$i = 0;
 															$diasShow = '';

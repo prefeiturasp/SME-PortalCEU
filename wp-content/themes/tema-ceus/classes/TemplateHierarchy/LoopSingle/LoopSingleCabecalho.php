@@ -44,6 +44,7 @@ class LoopSingleCabecalho extends LoopSingle
 						
 					<?php
 						$atividades = get_the_terms( $post->ID, 'atividades_categories' );
+						$atividades = is_array($atividades) ? array_values($atividades) : [];
 						$listaAtividades = array();
 
 						if (is_array($atividades) || $atividades instanceof Countable) {
@@ -58,7 +59,7 @@ class LoopSingleCabecalho extends LoopSingle
 									$listaAtividades[] = $atividade->term_id;
 								} 
 							}
-						} else {
+						} elseif ($atividadesTotal === 1) {
 							$listaAtividades[] = $atividades[0]->term_id;
 						}
 

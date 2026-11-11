@@ -1,14 +1,28 @@
 <?php get_header(); ?>
 
 <?php
+    // Normaliza os parametros sem alterar os dados globais da requisicao.
+    $filtros = [];
+    foreach (['atividades', 'atividadesInternas', 'faixaEtaria', 'publico', 'unidades', 'data', 'periodos'] as $filtro) {
+        $filtros[$filtro] = is_array($_GET[$filtro] ?? null)
+            ? array_values(array_filter($_GET[$filtro], 'is_scalar'))
+            : [];
+    }
+    $parametros = [];
+    foreach (['s', 'start', 'end', 'tipo_atividade', 'tipoData', 'faixa'] as $parametro) {
+        $parametros[$parametro] = is_string($_GET[$parametro] ?? null) ? $_GET[$parametro] : '';
+    }
 	$idPage = get_field('pagina_destaques', 'option');
 	$layout = get_field('fx_flex_layout', $idPage);
+	$layout = is_array($layout) ? $layout : [];
+	$slides = [];
 
 	foreach ($layout as $row) {
 		if ($row['acf_fc_layout'] === 'fx_linha_coluna_1') {
 			foreach ($row['fx_coluna_1_1'] as $col) {
 				if ($col['acf_fc_layout'] === 'slide_destaques') {
-					$slides = $col['slide'];
+					$slides = $col['slide'] ?? [];
+					$slides = is_array($slides) ? array_values($slides) : [];
 					break 2;
 				}
 			}
@@ -74,7 +88,7 @@
 							// Faixa Etaria
 							$faixas = get_terms( array( 
 								'taxonomy' => 'faixa_categories',
-								//'parent'   => 0,                                
+								'parent'   => 0,
 								'hide_empty' => false
 							) );
 
@@ -104,22 +118,23 @@
 									<input id="prodId" name="tipo" type="hidden" value="programacao">
 
 									<div class="col-sm-4 mt-3">
-										<input type="text" name="s" class="form-control" placeholder="Busque por palavra-chave" value="<?= $_GET['s']; ?>">
+										<input type="text" name="s" class="form-control" placeholder="Busque por palavra-chave" value="<?= esc_attr($parametros['s']); ?>">
 									</div>
 
 									<div class="col-sm-4 mt-3">
 										<select name="atividades[]" multiple="multiple" class="ms-list-1">
 											<?php if ( !empty( $terms ) && !is_wp_error( $terms ) ): ?>
-												<?php foreach( get_terms( 'atividades_categories', array( 'hide_empty' => false, 'parent' => 0 ) ) as $parent_term ) : ?>
+												<?php foreach( $terms as $parent_term ) : ?>
 													<?php
 														$term_children = get_term_children($parent_term->term_id, 'atividades_categories');
-														if($term_children):
+														if(is_array($term_children) && $term_children !== []):
 													?>
 														<optgroup label="<?= $parent_term->name; ?>">
 															<?php foreach($term_children as $term): 
 																$categoria = get_term( $term, 'atividades_categories' );
+																if (!($categoria instanceof \WP_Term)) { continue; }
 															?>
-																<?php if(in_array($categoria->slug, $_GET['atividades'])) :?>
+																<?php if(in_array($categoria->slug, $filtros['atividades'])) :?>
 																	<option value="<?= $categoria->slug; ?>" selected><?= $categoria->name; ?></option>
 																<?php else: ?>
 																	<option value="<?= $categoria->slug; ?>"><?= $categoria->name; ?></option>
@@ -137,13 +152,13 @@
 									<div class="col-sm-4 mt-3">
 										<select name="data[]" multiple="multiple" class="ms-list-9"> 
 											<optgroup label="Dia da semana">
-												<option value="segunda" <?= in_array('segunda', $_GET['data']) ? "selected" : ""; ?>>Segunda</option>
-												<option value="terca" <?= in_array('terca', $_GET['data']) ? "selected" : ""; ?>>Terça</option>
-												<option value="quarta" <?= in_array('quarta', $_GET['data']) ? "selected" : ""; ?>>Quarta</option>
-												<option value="quinta" <?= in_array('quinta', $_GET['data']) ? "selected" : ""; ?>>Quinta</option>
-												<option value="sexta" <?= in_array('sexta', $_GET['data']) ? "selected" : ""; ?>>Sexta</option>
-												<option value="sabado" <?= in_array('sabado', $_GET['data']) ? "selected" : ""; ?>>Sábado</option>
-												<option value="domingo" <?= in_array('domingo', $_GET['data']) ? "selected" : ""; ?>>Domingo</option>
+												<option value="segunda" <?= in_array('segunda', $filtros['data']) ? "selected" : ""; ?>>Segunda</option>
+												<option value="terca" <?= in_array('terca', $filtros['data']) ? "selected" : ""; ?>>Terça</option>
+												<option value="quarta" <?= in_array('quarta', $filtros['data']) ? "selected" : ""; ?>>Quarta</option>
+												<option value="quinta" <?= in_array('quinta', $filtros['data']) ? "selected" : ""; ?>>Quinta</option>
+												<option value="sexta" <?= in_array('sexta', $filtros['data']) ? "selected" : ""; ?>>Sexta</option>
+												<option value="sabado" <?= in_array('sabado', $filtros['data']) ? "selected" : ""; ?>>Sábado</option>
+												<option value="domingo" <?= in_array('domingo', $filtros['data']) ? "selected" : ""; ?>>Domingo</option>
 											</optgroup>
 										</select>
 									</div>
@@ -151,16 +166,17 @@
 									<div class="col-sm-4 mt-3 filtros-extra">                                
 										<select name="faixaEtaria[]" multiple="multiple" class="ms-list-4">                        
 											<?php if ( !empty( $faixas ) && !is_wp_error( $faixas ) ): ?>
-												<?php foreach( get_terms( 'faixa_categories', array( 'hide_empty' => false, 'parent' => 0 ) ) as $parent_term ) : ?>
+												<?php foreach( $faixas as $parent_term ) : ?>
 													<?php
 														$term_children = get_term_children($parent_term->term_id, 'faixa_categories');
-														if($term_children):
+														if(is_array($term_children) && $term_children !== []):
 													?>
 														<optgroup label="<?= $parent_term->name; ?>">
 															<?php foreach($term_children as $term): 
 																$faixa_etaria = get_term( $term, 'faixa_categories' );
+																if (!($faixa_etaria instanceof \WP_Term)) { continue; }
 															?>
-																<?php if(in_array($faixa_etaria->slug, $_GET['faixaEtaria'])) :?>                                                    	
+																<?php if(in_array($faixa_etaria->slug, $filtros['faixaEtaria'])) :?>
 																	<option value="<?= $faixa_etaria->slug; ?>" selected><?= $faixa_etaria->name; ?></option>
 																<?php else: ?>
 																	<option value="<?= $faixa_etaria->slug; ?>"><?= $faixa_etaria->name; ?></option>
@@ -178,8 +194,8 @@
 
 									<div class="col-sm-4 mt-3 filtros-extra">
 										<select name="publico[]" multiple="multiple" class="ms-list-3">                        
-											<?php foreach ($publicos as $publico): ?>
-												<?php if(in_array($publico->slug, $_GET['publico'])) :?>										
+											<?php foreach (is_array($publicos) ? $publicos : [] as $publico): ?>
+												<?php if(in_array($publico->slug, $filtros['publico'])) :?>
 													<option value="<?php echo $publico->slug; ?>" selected><?php echo $publico->name; ?></option>
 												<?php else: ?>
 													<option value="<?php echo $publico->slug; ?>"><?php echo $publico->name; ?></option>
@@ -212,7 +228,7 @@
 															$titulo = htmlentities(get_the_title());
 															$seletor = explode (" &amp;", $titulo);
 
-															if(in_array( get_the_ID(), $_GET['unidades']) ) {
+															if(in_array( get_the_ID(), $filtros['unidades']) ) {
 																echo '<option selected value="' . get_the_id() .'">' . $seletor[0] .'</option>';
 															} else {
 																echo '<option value="' . get_the_id() .'">' . $seletor[0] .'</option>';
@@ -229,18 +245,18 @@
 									<div class="col-sm-8 mt-3 filtros-extra">
 										<div id='date-range'>
 											<div class="input-daterange input-group" id="datepicker">
-												<input type="text" class="input-sm form-control" name="start" value="<?= $_GET['start']; ?>" placeholder="Data" />
+												<input type="text" class="input-sm form-control" name="start" value="<?= esc_attr($parametros['start']); ?>" placeholder="Data" />
 												<span class="input-group-addon px-2">Até</span>
-												<input type="text" class="input-sm form-control" name="end" value="<?= $_GET['end']; ?>" placeholder="Data" />
+												<input type="text" class="input-sm form-control" name="end" value="<?= esc_attr($parametros['end']); ?>" placeholder="Data" />
 											</div>
 										</div>
 									</div>
 
 									<div class="col-sm-4 mt-3 filtros-extra">
 										<select name="periodos[]" multiple="multiple" class="ms-list-8">
-											<option value='manha' <?= in_array('manha', $_GET['periodos']) ? "selected" : ""; ?>>Manhã</option>
-											<option value='tarde' <?= in_array('tarde', $_GET['periodos']) ? "selected" : ""; ?>>Tarde</option>
-											<option value='noite' <?= in_array('noite', $_GET['periodos']) ? "selected" : ""; ?>>Noite</option>                        
+											<option value='manha' <?= in_array('manha', $filtros['periodos']) ? "selected" : ""; ?>>Manhã</option>
+											<option value='tarde' <?= in_array('tarde', $filtros['periodos']) ? "selected" : ""; ?>>Tarde</option>
+											<option value='noite' <?= in_array('noite', $filtros['periodos']) ? "selected" : ""; ?>>Noite</option>
 										</select>
 									</div>
 								</div>
@@ -262,7 +278,7 @@
 		</div>
 
 		<div class="listagem-eventos">
-			<?php if($_GET['tipo_atividade'] && $_GET['tipo_atividade'] != '') : ?>
+			<?php if($parametros['tipo_atividade'] && $parametros['tipo_atividade'] != '') : ?>
 
 				<?php
 					
@@ -280,15 +296,15 @@
 									
 					);
 
-					if( isset($_GET['s']) && $_GET['s'] != ''){
-						$s = $_GET['s'];
+					if( isset($parametros['s']) && $parametros['s'] != ''){
+						$s = $parametros['s'];
 
 						$args['s'] = $s;
 					}
 
-					if( isset($_GET['tipo_atividade']) && $_GET['tipo_atividade'] != '' ){
+					if( isset($parametros['tipo_atividade']) && $parametros['tipo_atividade'] != '' ){
 						
-						$tipo = $_GET['tipo_atividade'];
+						$tipo = $parametros['tipo_atividade'];
 						$today = date('Ymd');
 						
 						if($tipo == 'proxima'){
@@ -369,8 +385,8 @@
 						}
 					}
 
-					if( (isset($_GET['atividades']) && $_GET['atividades'] != '') || (isset($_GET['atividadesInternas']) && $_GET['atividadesInternas'] != '') ){
-						$atividades = $_GET['atividades'];
+					if( !empty($filtros['atividades']) ){
+						$atividades = $filtros['atividades'];
 						
 						$args['tax_query'][] = array (
 							'taxonomy' => 'atividades_categories',
@@ -379,8 +395,8 @@
 						);
 					}
 
-					if( isset($_GET['atividadesInternas']) && $_GET['atividadesInternas'] != ''){
-						$atividadesInternas = $_GET['atividadesInternas'];
+					if( !empty($filtros['atividadesInternas'])){
+						$atividadesInternas = $filtros['atividadesInternas'];
 						
 						$args['tax_query'][] = array (
 							'taxonomy' => 'atividades_categories',
@@ -389,8 +405,8 @@
 						);
 					}
 
-					if( isset($_GET['publico']) && $_GET['publico'] != ''){
-						$publico = $_GET['publico'];
+					if( !empty($filtros['publico'])){
+						$publico = $filtros['publico'];
 						
 						$args['tax_query'][] = array (
 							'taxonomy' => 'publico_categories',
@@ -400,8 +416,8 @@
 						
 					}
 
-					if( isset($_GET['faixaEtaria']) && $_GET['faixaEtaria'] != ''){
-						$faixaEtaria = $_GET['faixaEtaria'];
+					if( !empty($filtros['faixaEtaria'])){
+						$faixaEtaria = $filtros['faixaEtaria'];
 						
 						$args['tax_query'][] = array (
 							'taxonomy' => 'faixa_categories',
@@ -412,8 +428,8 @@
 
 					
 
-					if( isset($_GET['unidades']) && $_GET['unidades'] != ''){
-						$unidades = $_GET['unidades'];
+					if( !empty($filtros['unidades'])){
+						$unidades = $filtros['unidades'];
 						
 						foreach($unidades as $unidade){
 							$unidadesBusca = array(
@@ -441,8 +457,8 @@
 						);
 					}
 
-					if( isset($_GET['periodos']) && $_GET['periodos'] != ''){
-						$periodos = $_GET['periodos'];
+					if( !empty($filtros['periodos'])){
+						$periodos = $filtros['periodos'];
 
 						if(in_array('manha', $periodos)){
 							$args['meta_query'][] = array(
@@ -548,14 +564,14 @@
 										
 					}
 
-					//if( isset($_GET['tipoData']) && $_GET['tipoData'] != ''){
-						$tipoData = $_GET['tipoData'];
+					//if( isset($parametros['tipoData']) && $parametros['tipoData'] != ''){
+						$tipoData = $parametros['tipoData'];
 
 						// Dia da semana
 						//if($tipoData == 'dia_semana'){
 
-							if( isset($_GET['data']) && $_GET['data'] != ''){
-								$diasSemana = $_GET['data'];
+							if( !empty($filtros['data'])){
+								$diasSemana = $filtros['data'];
 
 								$diasBusca = array();
 
@@ -577,9 +593,9 @@
 						// Intervalo de data
 						//if($tipoData == 'intervalo'){
 
-							if( isset($_GET['start']) && $_GET['start'] != ''){
-								$dtInicial = $_GET['start'];
-								$dtFinal = $_GET['end'];
+							if( preg_match('/^\d{2}\/\d{2}\/\d{4}$/D', $parametros['start']) && preg_match('/^\d{2}\/\d{2}\/\d{4}$/D', $parametros['end'])){
+								$dtInicial = $parametros['start'];
+								$dtFinal = $parametros['end'];
 		
 								$dtInicial = explode("/", $dtInicial);
 								$dtFinal = explode("/", $dtFinal);
@@ -613,13 +629,13 @@
 					$query = new WP_Query( $args );
 
 					?>
-					<?php if( isset($_GET['tipo_atividade']) && $_GET['tipo_atividade'] != ''): ?>
+					<?php if( isset($parametros['tipo_atividade']) && $parametros['tipo_atividade'] != ''): ?>
 						<?php				
 							$title = '';
 
-							if($_GET['tipo_atividade'] == 'proxima'){
+							if($parametros['tipo_atividade'] == 'proxima'){
 								$title = 'Próximas Atividades';                                    
-							} elseif($_GET['tipo_atividade'] == 'permanente'){
+							} elseif($parametros['tipo_atividade'] == 'permanente'){
 								$title = 'Atividades Permanentes';                                    
 							} else {
 								$title = 'Atividades Encerradas';                                    
@@ -709,6 +725,7 @@
 												<div class="evento-categ border-bottom pb-1">
 													<?php
 														$atividades = get_the_terms( get_the_ID(), 'atividades_categories' );
+														$atividades = is_array($atividades) ? array_values($atividades) : [];
 														$listaAtividades = array();
 														if($atividades){
 															$atividadesTotal = count($atividades);
@@ -722,7 +739,7 @@
 																	$listaAtividades[] = $atividade->term_id;
 																} 
 															}
-														} else {
+														} elseif ($atividadesTotal === 1) {
 															$listaAtividades[] = $atividades[0]->term_id;
 														}
 
@@ -776,11 +793,12 @@
 														} elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
 															
 															$semana = $campos['dia_da_semana'];
+															$semana = is_array($semana) ? array_values($semana) : [];
 															$diasSemana = array();
-															$show = array();
-
+															$show = [];
 															foreach($semana as $dias){
 
+																$dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
 																$total = count($dias['selecione_os_dias']); 
 																$i = 0;
 																$diasShow = '';
@@ -830,7 +848,7 @@
 															$dataFinal = $dias; 
 
 															$dias = '';
-															$show = '';
+															$show = [];
 															
 														} elseif($campos['tipo_de_data'] == 'periodo'){
 															
@@ -859,7 +877,7 @@
 																$dataFinal = $data;
 															} else { // Se nao tiver a final mostra apenas a inicial
 																if($dataInicial){
-																	$dataEvento = explode("-", $dataInicial);
+																	$dataEvento = $dataInicial;
 																	$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 																	$mes = translateMonth($mes);
 																	$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -881,26 +899,30 @@
 
 													if($tipoEvento == 'serie'){
 														$participantes = get_field('ceus_participantes',  get_the_ID());
-														$countPart = count($participantes);
-														$countPart = $countPart - 1;
-														
-														$dtInicial = $participantes[0]['data_serie'];
-														$dtFinal = $participantes[$countPart]['data_serie'];
-
-														if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
+														$participantes = is_array($participantes) ? array_values($participantes) : [];
+														$dataFinal = '';
+														if ($participantes !== []) {
+															$countPart = count($participantes);
+															$countPart = $countPart - 1;
 															
-															$dataInicial = explode("-", $dtInicial['data']);
-															$dataFinal = explode("-", $dtFinal['data']);
-															$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
-															$mes = translateMonth($mes);
+															$dtInicial = $participantes[0]['data_serie'];
+															$dtFinal = $participantes[$countPart]['data_serie'];
 
-															$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+															if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
 
-															$dataFinal = $data;
+																$dataInicial = explode("-", $dtInicial['data']);
+																$dataFinal = explode("-", $dtFinal['data']);
+																$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
+																$mes = translateMonth($mes);
 
-														} else {
-															$dataFinal = 'Múltiplas Datas';
-														}											
+																$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+
+																$dataFinal = $data;
+
+															} else {
+																$dataFinal = 'Múltiplas Datas';
+															}
+														}
 													}
 												?>
 												<?php
@@ -1030,7 +1052,7 @@
 								'posts_per_page' => 5,
 								'orderby'   => 'meta_value_num',
 								'order'     => 'ASC',
-								's' => $_GET['s'],
+								's' => $parametros['s'],
 								'meta_query' => array(
 									'relation' => 'AND',
 									array(
@@ -1056,8 +1078,8 @@
 									), 
 								)
 							);
-							if( (isset($_GET['atividades']) && $_GET['atividades'] != '') || (isset($_GET['atividadesInternas']) && $_GET['atividadesInternas'] != '') ){
-								$atividades = $_GET['atividades'];
+							if( !empty($filtros['atividades']) ){
+								$atividades = $filtros['atividades'];
 								
 								$args_next['tax_query'][] = array (
 									'taxonomy' => 'atividades_categories',
@@ -1066,8 +1088,8 @@
 								);
 							}
 				
-							if( isset($_GET['atividadesInternas']) && $_GET['atividadesInternas'] != ''){
-								$atividadesInternas = $_GET['atividadesInternas'];
+							if( !empty($filtros['atividadesInternas'])){
+								$atividadesInternas = $filtros['atividadesInternas'];
 								
 								$args_next['tax_query'][] = array (
 									'taxonomy' => 'atividades_categories',
@@ -1076,8 +1098,8 @@
 								);
 							}
 				
-							if( isset($_GET['publico']) && $_GET['publico'] != ''){
-								$publico = $_GET['publico'];
+							if( !empty($filtros['publico'])){
+								$publico = $filtros['publico'];
 								
 								$args_next['tax_query'][] = array (
 									'taxonomy' => 'publico_categories',
@@ -1086,8 +1108,8 @@
 								);
 							}
 				
-							if( isset($_GET['faixaEtaria']) && $_GET['faixaEtaria'] != ''){
-								$faixaEtaria = $_GET['faixaEtaria'];
+							if( !empty($filtros['faixaEtaria'])){
+								$faixaEtaria = $filtros['faixaEtaria'];
 								
 								$args_next['tax_query'][] = array (
 									'taxonomy' => 'faixa_categories',
@@ -1098,8 +1120,8 @@
 
 							
 				
-							if( isset($_GET['unidades']) && $_GET['unidades'] != ''){
-								$unidades = $_GET['unidades'];
+							if( !empty($filtros['unidades'])){
+								$unidades = $filtros['unidades'];
 								
 								foreach($unidades as $unidade){
 									$unidadesBusca = array(
@@ -1127,8 +1149,8 @@
 								);
 							}
 				
-							if( isset($_GET['periodos']) && $_GET['periodos'] != ''){
-								$periodos = $_GET['periodos'];
+							if( !empty($filtros['periodos'])){
+								$periodos = $filtros['periodos'];
 				
 								if(in_array('manha', $periodos)){
 									$args_next['meta_query'][] = array(
@@ -1231,9 +1253,9 @@
 												
 							}
 
-							if( isset($_GET['start']) && $_GET['start'] != ''){
-								$dtInicial = $_GET['start'];
-								$dtFinal = $_GET['end'];
+							if( preg_match('/^\d{2}\/\d{2}\/\d{4}$/D', $parametros['start']) && preg_match('/^\d{2}\/\d{2}\/\d{4}$/D', $parametros['end'])){
+								$dtInicial = $parametros['start'];
+								$dtFinal = $parametros['end'];
 
 								$dtInicial = explode("/", $dtInicial);
 								$dtFinal = explode("/", $dtFinal);
@@ -1331,6 +1353,7 @@
 														<div class="evento-categ border-bottom pb-1">
 															<?php
 																$atividades = get_the_terms( get_the_ID(), 'atividades_categories' );
+																$atividades = is_array($atividades) ? array_values($atividades) : [];
 																$listaAtividades = array();
 
 																$atividadesTotal = count($atividades);
@@ -1341,7 +1364,7 @@
 																			$listaAtividades[] = $atividade->term_id;
 																		} 
 																	}
-																} else {
+																} elseif ($atividadesTotal === 1) {
 																	$listaAtividades[] = $atividades[0]->term_id;
 																}
 
@@ -1392,11 +1415,12 @@
 																} elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
 																	
 																	$semana = $campos['dia_da_semana'];
+																	$semana = is_array($semana) ? array_values($semana) : [];
 																	$diasSemana = array();
-																	$show = array();
-
+																	$show = [];
 																	foreach($semana as $dias){
 
+																		$dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
 																		$total = count($dias['selecione_os_dias']); 
 																		$i = 0;
 																		$diasShow = '';
@@ -1446,7 +1470,7 @@
 																	$dataFinal = $dias; 
 
 																	$dias = '';
-																	$show = '';
+																	$show = [];
 																	
 																} elseif($campos['tipo_de_data'] == 'periodo'){
 																	
@@ -1474,7 +1498,7 @@
 																		$dataFinal = $data;
 																	} else { // Se nao tiver a final mostra apenas a inicial
 																		if($dataInicial){
-																			$dataEvento = explode("-", $dataInicial);
+																			$dataEvento = $dataInicial;
 																			$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 																			$mes = translateMonth($mes);
 																			$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -1496,26 +1520,30 @@
 
 															if($tipoEvento == 'serie'){
 																$participantes = get_field('ceus_participantes',  get_the_ID());
-																$countPart = count($participantes);
-																$countPart = $countPart - 1;
-																
-																$dtInicial = $participantes[0]['data_serie'];
-																$dtFinal = $participantes[$countPart]['data_serie'];
-
-																if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
+																$participantes = is_array($participantes) ? array_values($participantes) : [];
+																$dataFinal = '';
+																if ($participantes !== []) {
+																	$countPart = count($participantes);
+																	$countPart = $countPart - 1;
 																	
-																	$dataInicial = explode("-", $dtInicial['data']);
-																	$dataFinal = explode("-", $dtFinal['data']);
-																	$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
-																	$mes = translateMonth($mes);
+																	$dtInicial = $participantes[0]['data_serie'];
+																	$dtFinal = $participantes[$countPart]['data_serie'];
 
-																	$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+																	if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
 
-																	$dataFinal = $data;
+																		$dataInicial = explode("-", $dtInicial['data']);
+																		$dataFinal = explode("-", $dtFinal['data']);
+																		$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
+																		$mes = translateMonth($mes);
 
-																} else {
-																	$dataFinal = 'Múltiplas Datas';
-																}											
+																		$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+
+																		$dataFinal = $data;
+
+																	} else {
+																		$dataFinal = 'Múltiplas Datas';
+																	}
+																}
 															}
 														?>
 														<p class="mb-0">
@@ -1606,7 +1634,7 @@
 							// Atividades Permanentes
 							$args = array(
 								'posts_per_page' => 8,
-								's' => $_GET['s'],
+								's' => $parametros['s'],
 								'meta_query' => array(
 									'relation' => 'AND',                            
 									array(
@@ -1616,8 +1644,8 @@
 								)
 							);
 
-							if( (isset($_GET['atividades']) && $_GET['atividades'] != '') || (isset($_GET['atividadesInternas']) && $_GET['atividadesInternas'] != '') ){
-								$atividades = $_GET['atividades'];
+							if( !empty($filtros['atividades']) ){
+								$atividades = $filtros['atividades'];
 								
 								$args['tax_query'][] = array (
 									'taxonomy' => 'atividades_categories',
@@ -1626,8 +1654,8 @@
 								);
 							}
 				
-							if( isset($_GET['atividadesInternas']) && $_GET['atividadesInternas'] != ''){
-								$atividadesInternas = $_GET['atividadesInternas'];
+							if( !empty($filtros['atividadesInternas'])){
+								$atividadesInternas = $filtros['atividadesInternas'];
 								
 								$args['tax_query'][] = array (
 									'taxonomy' => 'atividades_categories',
@@ -1636,8 +1664,8 @@
 								);
 							}
 				
-							if( isset($_GET['publico']) && $_GET['publico'] != ''){
-								$publico = $_GET['publico'];
+							if( !empty($filtros['publico'])){
+								$publico = $filtros['publico'];
 								
 								$args['tax_query'][] = array (
 									'taxonomy' => 'publico_categories',
@@ -1646,8 +1674,8 @@
 								);
 							}
 				
-							if( isset($_GET['faixaEtaria']) && $_GET['faixaEtaria'] != ''){
-								$faixaEtaria = $_GET['faixaEtaria'];
+							if( !empty($filtros['faixaEtaria'])){
+								$faixaEtaria = $filtros['faixaEtaria'];
 								
 								$args['tax_query'][] = array (
 									'taxonomy' => 'faixa_categories',
@@ -1658,8 +1686,8 @@
 
 							
 				
-							if( isset($_GET['unidades']) && $_GET['unidades'] != ''){
-								$unidades = $_GET['unidades'];
+							if( !empty($filtros['unidades'])){
+								$unidades = $filtros['unidades'];
 								
 								foreach($unidades as $unidade){
 									$unidadesBusca = array(
@@ -1687,8 +1715,8 @@
 								);
 							}
 				
-							if( isset($_GET['periodos']) && $_GET['periodos'] != ''){
-								$periodos = $_GET['periodos'];
+							if( !empty($filtros['periodos'])){
+								$periodos = $filtros['periodos'];
 				
 								if(in_array('manha', $periodos)){
 									$args['meta_query'][] = array(
@@ -1858,6 +1886,7 @@
 														<div class="evento-categ border-bottom pb-1">
 															<?php
 																$atividades = get_the_terms( get_the_ID(), 'atividades_categories' );
+																$atividades = is_array($atividades) ? array_values($atividades) : [];
 																$listaAtividades = array();
 
 																$atividadesTotal = count($atividades);
@@ -1868,7 +1897,7 @@
 																			$listaAtividades[] = $atividade->term_id;
 																		} 
 																	}
-																} else {
+																} elseif ($atividadesTotal === 1) {
 																	$listaAtividades[] = $atividades[0]->term_id;
 																}
 
@@ -1919,11 +1948,12 @@
 																} elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
 																	
 																	$semana = $campos['dia_da_semana'];
+																	$semana = is_array($semana) ? array_values($semana) : [];
 																	$diasSemana = array();
-																	$show = array();
-
+																	$show = [];
 																	foreach($semana as $dias){
 
+																		$dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
 																		$total = count($dias['selecione_os_dias']); 
 																		$i = 0;
 																		$diasShow = '';
@@ -1972,7 +2002,7 @@
 																	$dataFinal = $dias; 
 
 																	$dias = '';
-																	$show = '';
+																	$show = [];
 																	
 																} elseif($campos['tipo_de_data'] == 'periodo'){
 																	
@@ -2000,7 +2030,7 @@
 																		$dataFinal = $data;
 																	} else { // Se nao tiver a final mostra apenas a inicial
 																		if($dataInicial){
-																			$dataEvento = explode("-", $dataInicial);
+																			$dataEvento = $dataInicial;
 																			$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 																			$mes = translateMonth($mes);
 																			$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -2022,26 +2052,30 @@
 
 															if($tipoEvento == 'serie'){
 																$participantes = get_field('ceus_participantes',  get_the_ID());
-																$countPart = count($participantes);
-																$countPart = $countPart - 1;
-																
-																$dtInicial = $participantes[0]['data_serie'];
-																$dtFinal = $participantes[$countPart]['data_serie'];
-
-																if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
+																$participantes = is_array($participantes) ? array_values($participantes) : [];
+																$dataFinal = '';
+																if ($participantes !== []) {
+																	$countPart = count($participantes);
+																	$countPart = $countPart - 1;
 																	
-																	$dataInicial = explode("-", $dtInicial['data']);
-																	$dataFinal = explode("-", $dtFinal['data']);
-																	$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
-																	$mes = translateMonth($mes);
+																	$dtInicial = $participantes[0]['data_serie'];
+																	$dtFinal = $participantes[$countPart]['data_serie'];
 
-																	$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+																	if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
 
-																	$dataFinal = $data;
+																		$dataInicial = explode("-", $dtInicial['data']);
+																		$dataFinal = explode("-", $dtFinal['data']);
+																		$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
+																		$mes = translateMonth($mes);
 
-																} else {
-																	$dataFinal = 'Múltiplas Datas';
-																}											
+																		$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+
+																		$dataFinal = $data;
+
+																	} else {
+																		$dataFinal = 'Múltiplas Datas';
+																	}
+																}
 															}
 														?>
 														<p class="mb-0">
@@ -2132,7 +2166,7 @@
 							// Atividades Encerradas
 							$args_before = array(
 								'posts_per_page' => 8,
-								's' => $_GET['s'],
+								's' => $parametros['s'],
 								//'meta_key'  => 'data_data',
 								'orderby'   => 'meta_value_num',
 								'order'     => 'DESC',
@@ -2162,8 +2196,8 @@
 																					
 								)
 							);
-							if( (isset($_GET['atividades']) && $_GET['atividades'] != '') || (isset($_GET['atividadesInternas']) && $_GET['atividadesInternas'] != '') ){
-								$atividades = $_GET['atividades'];
+							if( !empty($filtros['atividades']) ){
+								$atividades = $filtros['atividades'];
 								
 								$args_before['tax_query'][] = array (
 									'taxonomy' => 'atividades_categories',
@@ -2172,8 +2206,8 @@
 								);
 							}
 				
-							if( isset($_GET['atividadesInternas']) && $_GET['atividadesInternas'] != ''){
-								$atividadesInternas = $_GET['atividadesInternas'];
+							if( !empty($filtros['atividadesInternas'])){
+								$atividadesInternas = $filtros['atividadesInternas'];
 								
 								$args_before['tax_query'][] = array (
 									'taxonomy' => 'atividades_categories',
@@ -2182,8 +2216,8 @@
 								);
 							}
 				
-							if( isset($_GET['publico']) && $_GET['publico'] != ''){
-								$publico = $_GET['publico'];
+							if( !empty($filtros['publico'])){
+								$publico = $filtros['publico'];
 								
 								$args_before['tax_query'][] = array (
 									'taxonomy' => 'publico_categories',
@@ -2192,8 +2226,8 @@
 								);
 							}
 				
-							if( isset($_GET['faixaEtaria']) && $_GET['faixaEtaria'] != ''){
-								$faixaEtaria = $_GET['faixaEtaria'];
+							if( !empty($filtros['faixaEtaria'])){
+								$faixaEtaria = $filtros['faixaEtaria'];
 								
 								$args_before['tax_query'][] = array (
 									'taxonomy' => 'faixa_categories',
@@ -2202,8 +2236,8 @@
 								);
 							}
 
-							if( isset($_GET['faixa']) && $_GET['faixa'] != ''){
-								$faixa= $_GET['faixa'];
+							if( isset($parametros['faixa']) && $parametros['faixa'] != ''){
+								$faixa= $parametros['faixa'];
 								var_dump($faixa);
 
 								$args_before['meta_query'][] = 	array(
@@ -2229,8 +2263,8 @@
 								
 							}
 				
-							if( isset($_GET['unidades']) && $_GET['unidades'] != ''){
-								$unidades = $_GET['unidades'];
+							if( !empty($filtros['unidades'])){
+								$unidades = $filtros['unidades'];
 								
 								foreach($unidades as $unidade){
 									$unidadesBusca = array(
@@ -2258,8 +2292,8 @@
 								);
 							}
 				
-							if( isset($_GET['periodos']) && $_GET['periodos'] != ''){
-								$periodos = $_GET['periodos'];
+							if( !empty($filtros['periodos'])){
+								$periodos = $filtros['periodos'];
 				
 								if(in_array('manha', $periodos)){
 									$args_before['meta_query'][] = array(
@@ -2365,9 +2399,9 @@
 												
 							}
 
-							if( isset($_GET['start']) && $_GET['start'] != ''){
-								$dtInicial = $_GET['start'];
-								$dtFinal = $_GET['end'];
+							if( preg_match('/^\d{2}\/\d{2}\/\d{4}$/D', $parametros['start']) && preg_match('/^\d{2}\/\d{2}\/\d{4}$/D', $parametros['end'])){
+								$dtInicial = $parametros['start'];
+								$dtFinal = $parametros['end'];
 
 								$dtInicial = explode("/", $dtInicial);
 								$dtFinal = explode("/", $dtFinal);
@@ -2442,18 +2476,22 @@
 
 									if($tipoEvento == 'serie'){
 										$participantes = get_field('ceus_participantes',  get_the_ID());
-										$countPart = count($participantes);
-										$countPart = $countPart - 1;
-										
-										$dtInicial = $participantes[0]['data_serie'];
-										$dtFinal = $participantes[$countPart]['data_serie'];
+										$participantes = is_array($participantes) ? array_values($participantes) : [];
+										$dataEventoVer = '';
+										if ($participantes !== []) {
+											$countPart = count($participantes);
+											$countPart = $countPart - 1;
 
-										if($dtFinal['tipo_de_data'] == 'data'){
-											$dataEventoVer = $dtInicial['data'];
-											if(!$dataEventoVer){ // Verifica se possui a data final
-												$dataEventoVer = get_the_date('Y-m-d');
+											$dtInicial = $participantes[0]['data_serie'];
+											$dtFinal = $participantes[$countPart]['data_serie'];
+
+											if($dtFinal['tipo_de_data'] == 'data'){
+												$dataEventoVer = $dtInicial['data'];
+												if(!$dataEventoVer){ // Verifica se possui a data final
+													$dataEventoVer = get_the_date('Y-m-d');
+												}
 											}
-										}											
+										}
 									}
 
 									if($dataEventoVer)
@@ -2535,6 +2573,7 @@
 													<div class="evento-categ border-bottom pb-1">
 														<?php
 															$atividades = get_the_terms( get_the_ID(), 'atividades_categories' );
+															$atividades = is_array($atividades) ? array_values($atividades) : [];
 															$listaAtividades = array();
 															if($atividades){
 																$atividadesTotal = count($atividades);
@@ -2549,7 +2588,7 @@
 																		$listaAtividades[] = $atividade->term_id;
 																	} 
 																}
-															} else {
+															} elseif ($atividadesTotal === 1) {
 																$listaAtividades[] = $atividades[0]->term_id;
 															}
 
@@ -2600,11 +2639,12 @@
 															} elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
 																
 																$semana = $campos['dia_da_semana'];
+																$semana = is_array($semana) ? array_values($semana) : [];
 																$diasSemana = array();
-																$show = array();
-
+																$show = [];
 																foreach($semana as $dias){
 
+																	$dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
 																	$total = count($dias['selecione_os_dias']); 
 																	$i = 0;
 																	$diasShow = '';
@@ -2653,7 +2693,7 @@
 																$dataFinal = $dias; 
 
 																$dias = '';
-																$show = '';
+																$show = [];
 																
 															} elseif($campos['tipo_de_data'] == 'periodo'){
 																
@@ -2681,7 +2721,7 @@
 																	$dataFinal = $data;
 																} else { // Se nao tiver a final mostra apenas a inicial
 																	if($dataInicial){
-																		$dataEvento = explode("-", $dataInicial);
+																		$dataEvento = $dataInicial;
 																		$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 																		$mes = translateMonth($mes);
 																		$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -2703,26 +2743,30 @@
 
 														if($tipoEvento == 'serie'){
 															$participantes = get_field('ceus_participantes',  get_the_ID());
-															$countPart = count($participantes);
-															$countPart = $countPart - 1;
-															
-															$dtInicial = $participantes[0]['data_serie'];
-															$dtFinal = $participantes[$countPart]['data_serie'];
-
-															if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
+															$participantes = is_array($participantes) ? array_values($participantes) : [];
+															$dataFinal = '';
+															if ($participantes !== []) {
+																$countPart = count($participantes);
+																$countPart = $countPart - 1;
 																
-																$dataInicial = explode("-", $dtInicial['data']);
-																$dataFinal = explode("-", $dtFinal['data']);
-																$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
-																$mes = translateMonth($mes);
+																$dtInicial = $participantes[0]['data_serie'];
+																$dtFinal = $participantes[$countPart]['data_serie'];
 
-																$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+																if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
 
-																$dataFinal = $data;
+																	$dataInicial = explode("-", $dtInicial['data']);
+																	$dataFinal = explode("-", $dtFinal['data']);
+																	$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
+																	$mes = translateMonth($mes);
 
-															} else {
-																$dataFinal = 'Múltiplas Datas';
-															}											
+																	$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+
+																	$dataFinal = $data;
+
+																} else {
+																	$dataFinal = 'Múltiplas Datas';
+																}
+															}
 														}
 													?>
 													<p class="mb-0">
@@ -2868,6 +2912,7 @@
 								
 							} else {
 								$ceus = get_field('ceus_participantes', $slide->ID);
+								$ceus = is_array($ceus) ? array_values($ceus) : [];
 								$verify = 0;
 								foreach($ceus as $ceu){
 									$tipoData = $ceu['data_serie']['tipo_de_data'];
@@ -2943,6 +2988,7 @@
 														<?php
 															$tipoEvento = get_field('tipo_de_evento_tipo', $slide->ID);
 															$atividades = get_the_terms( $slide->ID, 'atividades_categories' );
+															$atividades = is_array($atividades) ? array_values($atividades) : [];
 															$listaAtividades = array();
 															if($atividades){
 																foreach($atividades as $atividade){
@@ -3038,7 +3084,7 @@
 																	
 																} else { // Se nao tiver a final mostra apenas a inicial
 																	if($dataInicial){
-																		$dataEvento = explode("-", $dataInicial);
+																		$dataEvento = $dataInicial;
 																		$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 																		$mes = translateMonth($mes);
 																		$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -3056,13 +3102,14 @@
 
 															} elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
 																
-																$semana = $campos['dia_da_semana'];													
+																$semana = $campos['dia_da_semana'];
+																$semana = is_array($semana) ? array_values($semana) : [];
 														
 																$diasSemana = array();
 																$show = [];
-
 																foreach($semana as $dias){
 
+																	$dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
 																	$total = count($dias['selecione_os_dias']); 
 																	$i = 0;
 																	$diasShow = '';
@@ -3114,26 +3161,30 @@
 														}
 														if($tipoEvento == 'serie'){
 															$participantes = get_field('ceus_participantes',  $slide->ID);
-															$countPart = count($participantes);
-															$countPart = $countPart - 1;
-															
-															$dtInicial = $participantes[0]['data_serie'];
-															$dtFinal = $participantes[$countPart]['data_serie'];
-
-															if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
+															$participantes = is_array($participantes) ? array_values($participantes) : [];
+															$dataFinal = '';
+															if ($participantes !== []) {
+																$countPart = count($participantes);
+																$countPart = $countPart - 1;
 																
-																$dataInicial = explode("-", $dtInicial['data']);
-																$dataFinal = explode("-", $dtFinal['data']);
-																$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
-																$mes = translateMonth($mes);
+																$dtInicial = $participantes[0]['data_serie'];
+																$dtFinal = $participantes[$countPart]['data_serie'];
 
-																$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+																if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
 
-																$dataFinal = $data;
+																	$dataInicial = explode("-", $dtInicial['data']);
+																	$dataFinal = explode("-", $dtFinal['data']);
+																	$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
+																	$mes = translateMonth($mes);
 
-															} else {
-																$dataFinal = 'Múltiplas Datas';
-															}											
+																	$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+
+																	$dataFinal = $data;
+
+																} else {
+																	$dataFinal = 'Múltiplas Datas';
+																}
+															}
 														}
 													?>
 													<p class="mb-0">

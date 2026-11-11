@@ -79,6 +79,7 @@ class CptPosts extends Cpt
 					echo '<h4>Atividades permanentes</h4>';
 				} elseif($tipoEvento == 'serie'){					
 					$participantes = get_field('ceus_participantes');
+					$participantes = is_array($participantes) ? array_values($participantes) : [];
 					if($participantes){
 						$countPart = count($participantes);
 						$countPart = $countPart - 1;

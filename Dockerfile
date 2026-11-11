@@ -54,7 +54,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-ARG APM_AGENT_VERSION=1.17.0
+ARG APM_AGENT_VERSION=1.17.1
 
 RUN curl -L -O https://github.com/elastic/apm-agent-php/releases/download/v${APM_AGENT_VERSION}/apm-agent-php_${APM_AGENT_VERSION}_amd64.deb \
     && dpkg -i apm-agent-php_${APM_AGENT_VERSION}_amd64.deb \
