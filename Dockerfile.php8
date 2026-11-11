@@ -1,0 +1,59 @@
+FROM php:8.3.36-apache-trixie
+LABEL autor_name='Bruna Lima'
+LABEL autor_email='bruna.lima@spassu.com.br'
+
+ENV TZ=America/Sao_Paulo
+
+# Dependências do sistema
+RUN apt-get update && apt-get install --no-install-recommends --yes \
+    cron \
+    g++ \
+    dos2unix \
+    gettext \
+    tzdata \
+    locales \
+    libicu-dev \
+    libxml2-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libwebp-dev \
+    bzip2 \
+    libbz2-dev \
+    libtidy-dev \
+    zlib1g-dev \
+    libmemcached-dev \
+    libapache2-mod-security2 \
+    modsecurity-crs \
+    libxslt1-dev \
+    libzip-dev \
+    libmagickwand-dev \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
+    && sed -i 's/^# *en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen && locale-gen \
+    && rm -rf /var/lib/apt/lists/*
+
+# Extensões PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j"$(nproc)" \
+    bcmath \
+    bz2 \
+    calendar \
+    dba \
+    exif \
+    gd \
+    gettext \
+    intl \
+    pdo_mysql \
+    mysqli \
+    soap \
+    tidy \
+    xsl \
+    zip \
+    sockets
+
+# Extensões PECL
+RUN pecl install imagick-3.8.0 \
+    && docker-php-ext-enable imagick
+
+# Módulos do Apache
+RUN a2enmod rewrite headers security2
