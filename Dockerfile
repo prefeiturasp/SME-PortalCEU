@@ -48,6 +48,17 @@ ENV AUTO_CREATE_INDEX_FILE="false"
 ENV PHP_MAX_EXECUTION_TIME="120"
 
 # ==========================================================
+## Instalação do APM Agent
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG APM_AGENT_VERSION=1.17.1
+
+RUN curl -L -O https://github.com/elastic/apm-agent-php/releases/download/v${APM_AGENT_VERSION}/apm-agent-php_${APM_AGENT_VERSION}_amd64.deb \
+    && dpkg -i apm-agent-php_${APM_AGENT_VERSION}_amd64.deb \
+    && rm apm-agent-php_${APM_AGENT_VERSION}_amd64.deb
 
 # You can easily change PHP-FPM configurations
 # by using pre-defined Docker's environment variables.
@@ -63,6 +74,7 @@ COPY modsecurity/crs-setup.conf /etc/modsecurity/crs/
 COPY modsecurity/modsecurity.template /etc/modsecurity/
 #Arquivo criado via K8S (ConfigMap)
 #COPY modsecurity/location_match.modsecurity.example /etc/apache2/locationmatch/location_match.modsecurity
+COPY modsecurity/docker-php-entrypoint /usr/local/bin/
 
 RUN mkdir -p /etc/modsecurity/crs/before && mkdir -p /etc/modsecurity/crs/after
 #modsecurity DOS setup
@@ -70,7 +82,6 @@ RUN mkdir -p /etc/modsecurity/crs/dos
 #load crs
 COPY modsecurity/owasp-crs.conf /usr/share/modsecurity-crs/owasp-crs.load
 
-COPY modsecurity/docker-php-entrypoint /usr/local/bin/
 RUN find /var/www/html -type d -exec chmod 755 {} \; && find /var/www/html -type f -exec chmod 644 {} \; && chmod 660 /var/www/html/wp-config.php && chmod 664 /var/www/html/.htaccess
 RUN chmod +x /usr/local/bin/docker-php-entrypoint && dos2unix /usr/local/bin/docker-php-entrypoint
 RUN rm -Rf phpconf modsecurity
