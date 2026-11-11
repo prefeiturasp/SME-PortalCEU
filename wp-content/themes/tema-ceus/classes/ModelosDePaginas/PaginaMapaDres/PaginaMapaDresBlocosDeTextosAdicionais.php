@@ -10,7 +10,7 @@ class PaginaMapaDresBlocosDeTextosAdicionais
 		$titulo_mapa = get_field('insira_o_titulo_mapa_dres');
 		$subtitulo_mapa = get_field('insira_o_subtitulo_mapa_dres');
 
-		if (trim($titulo_mapa) !== '' || trim($subtitulo_mapa !== "")) {
+		if (trim((string) ($titulo_mapa ?? '')) !== '' || trim((string) ($subtitulo_mapa ?? '')) !== '') {
 
 			echo '<article class="col-12 mt-lg-2 mt-5">';
 			echo '<p class="titulo-blocos-de-texto">' . $titulo_mapa . '</p>';
@@ -25,7 +25,7 @@ class PaginaMapaDresBlocosDeTextosAdicionais
 		$texto_bloco_superior =  get_field('texto_superior_pagina_mapa_dres');
 		$imagem_texto_bloco_superior =  get_field('imagem_texto_superior_mapa_dres');
 
-		if (trim($titulo_texto_bloco_superior) !== '' || trim($texto_bloco_superior !== "")) {
+		if (trim((string) ($titulo_texto_bloco_superior ?? '')) !== '' || trim((string) ($texto_bloco_superior ?? '')) !== '') {
 
 			echo '<article class="col-12 col-lg-6 mb-md-5">';
 			echo '<p class="titulo-blocos-de-texto">' . $titulo_texto_bloco_superior . '</p>';
@@ -47,7 +47,7 @@ class PaginaMapaDresBlocosDeTextosAdicionais
 		$texto_bloco_inferior =  get_field('texto_inferior_mapa_dres');
 		$imagem_texto_bloco_inferior =  get_field('imagem_texto_inferior_mapa_dres');
 
-		if (trim($titulo_texto_bloco_inferior) !== '' || trim($texto_bloco_inferior !== "")) {
+		if (trim((string) ($titulo_texto_bloco_inferior ?? '')) !== '' || trim((string) ($texto_bloco_inferior ?? '')) !== '') {
 			echo '<article class="col-12 col-lg-6 mb-md-5 mt-5">';
 			echo '<p class="titulo-blocos-de-texto">' . $titulo_texto_bloco_inferior . '</p>';
 			echo $texto_bloco_inferior;

@@ -93,7 +93,7 @@ class ArchiveOrganograma extends ArchiveContato
 		return $this->taxonomy_name->term_id;
 	}
 
-	public function abreDivs($id= null, array $classes_divs, $aria_labelledby = null){
+	public function abreDivs($id, array $classes_divs, $aria_labelledby = null){
 
 		foreach ($classes_divs as $classe_div){
 

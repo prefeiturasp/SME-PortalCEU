@@ -73,6 +73,13 @@ class LoopSingleRelacionadas extends LoopSingle
 	} 
 	
 	public function my_related_posts() {
+        $filtros = [];
+        foreach (['atividades', 'atividadesInternas', 'unidades', 'semana'] as $filtro) {
+            $filtros[$filtro] = is_array($_GET[$filtro] ?? null)
+                ? array_values(array_filter($_GET[$filtro], 'is_scalar'))
+                : [];
+        }
+        $dataSelecionada = is_string($_GET['data'] ?? null) ? $_GET['data'] : '';
 		global $post;
 		$tipoEvento = get_field('tipo_de_evento_tipo', $post->ID);
 		$group_field = get_field( "tipo_de_evento", $post->ID );
@@ -208,6 +215,7 @@ class LoopSingleRelacionadas extends LoopSingle
 					
 					if($tipoEventoFiltro == 'serie'){						
 						$participantes = get_field('ceus_participantes', $post->ID);
+						$participantes = is_array($participantes) ? array_values($participantes) : [];
 						
 						if($participantes && $participantes != ''){
 							foreach($participantes as $participante){
@@ -232,7 +240,9 @@ class LoopSingleRelacionadas extends LoopSingle
 								} elseif($participante['data_serie']['tipo_de_data'] == 'semana'){
 									//$total = count($participante['selecione_os_dias']);
 									$semana = $participante['data_serie']['dia_da_semana'];
+									$semana = is_array($semana) ? array_values($semana) : [];
 									if($semana != ''){
+										$show = [];
 										foreach($semana as $dias){
 											foreach($dias['selecione_os_dias'] as $dia){
 												$diasSemana[] = $dia;
@@ -269,7 +279,9 @@ class LoopSingleRelacionadas extends LoopSingle
 							} elseif($campos['tipo_de_data'] == 'semana'){
 								//$total = count($campos['selecione_os_dias']);
 								$semana = $campos['dia_da_semana'];
+								$semana = is_array($semana) ? array_values($semana) : [];
 								if($semana != ''){
+									$show = [];
 									foreach($semana as $dias){
 										foreach($dias['selecione_os_dias'] as $dia){
 											$diasSemana[] = $dia;
@@ -357,7 +369,7 @@ class LoopSingleRelacionadas extends LoopSingle
 													<?php foreach($catSubs as $term):
 														$categoria = get_term( $term, 'atividades_categories' );
 													?>
-														<?php if(in_array($categoria->slug, $_GET['atividades'])) :?>
+														<?php if(in_array($categoria->slug, $filtros['atividades'])) :?>
 															<option value="<?= $categoria->slug; ?>" selected><?= $categoria->name; ?></option>
 														<?php else: ?>
 															<option value="<?= $categoria->slug; ?>"><?= $categoria->name; ?></option>
@@ -378,7 +390,7 @@ class LoopSingleRelacionadas extends LoopSingle
 										<?php foreach($unidadesFiltro as $key => $value): ?>
 
 											<?php 
-												if(in_array( $key, $_GET['unidades']) ) {
+											if(in_array( $key, $filtros['unidades']) ) {
 															echo '<option selected value="' . $key .'">' . $value .'</option>';
 												} else {
 													echo '<option value="' . $key .'">' . $value .'</option>';
@@ -395,7 +407,7 @@ class LoopSingleRelacionadas extends LoopSingle
 											<option value="" disabled selected>Selecione a data</option>
 											
 											<?php foreach($diasEventos as $dia) : ?>
-												<?php if($_GET['data'] == $dia): ?>
+												<?php if($dataSelecionada == $dia): ?>
 													<option value="<?php echo $dia; ?>" selected><?php echo $this->convertData($dia); ?></option>
 												<?php else : ?>
 													<option value="<?php echo $dia; ?>"><?php echo $this->convertData($dia); ?></option>
@@ -421,7 +433,7 @@ class LoopSingleRelacionadas extends LoopSingle
 														$valor = str_replace('á', 'a', $valor); // Remover caracteres especiais
 														$valor = strtolower($valor); // Converter para minúsculas
 												?>
-													<option value="<?= $valor; ?>" <?= in_array($valor, $_GET['semana']) ? "selected" : ""; ?>><?= $dia; ?></option>
+													<option value="<?= $valor; ?>" <?= in_array($valor, $filtros['semana']) ? "selected" : ""; ?>><?= $dia; ?></option>
 												<?php endforeach; ?>
 											</optgroup>
 										</select>
@@ -446,8 +458,8 @@ class LoopSingleRelacionadas extends LoopSingle
 
 		<?php
 						
-			if( isset($_GET['data']) && $_GET['data'] != ''){
-				$diaEvento = $_GET['data'];
+			if( isset($dataSelecionada) && $dataSelecionada != ''){
+				$diaEvento = $dataSelecionada;
 
 				$diaEvento = str_replace('-', '', $diaEvento);
 
@@ -477,8 +489,8 @@ class LoopSingleRelacionadas extends LoopSingle
 				);
 			}
 
-			if( isset($_GET['semana']) && $_GET['semana'] != ''){
-				$diasSemana = $_GET['semana'];
+			if( !empty($filtros['semana'])){
+				$diasSemana = $filtros['semana'];
 
 				$diasBusca = array(
 					'relation'	=> 'OR',
@@ -497,8 +509,8 @@ class LoopSingleRelacionadas extends LoopSingle
 				);	
 			}
 
-			if( isset($_GET['atividades']) && $_GET['atividades'] != ''){
-				$atividades = $_GET['atividades'];
+			if( !empty($filtros['atividades'])){
+				$atividades = $filtros['atividades'];
 				
 				$args['tax_query'][] = array (
 					'taxonomy' => 'atividades_categories',
@@ -507,8 +519,8 @@ class LoopSingleRelacionadas extends LoopSingle
 				);
 			}
 
-			if( isset($_GET['atividadesInternas']) && $_GET['atividadesInternas'] != ''){
-				$atividadesInternas = $_GET['atividadesInternas'];
+			if( !empty($filtros['atividadesInternas'])){
+				$atividadesInternas = $filtros['atividadesInternas'];
 				
 				$args['tax_query'][] = array (
 					'taxonomy' => 'atividades_categories',
@@ -517,10 +529,10 @@ class LoopSingleRelacionadas extends LoopSingle
 				);
 			}
 
-			if( isset($_GET['unidades']) && $_GET['unidades'] != ''){
-				$unidades = $_GET['unidades'];
+			if( !empty($filtros['unidades'])){
+				$unidades = $filtros['unidades'];
 				
-				$unidades = $_GET['unidades'];
+				$unidades = $filtros['unidades'];
 				$unidadesBusca = array();
 
 				$unidadesBusca['relation'] = 'OR';
@@ -588,6 +600,7 @@ class LoopSingleRelacionadas extends LoopSingle
 											<div class="evento-categ border-bottom pb-1">
 												<?php
 													$atividades = get_the_terms( get_the_ID(), 'atividades_categories' );
+													$atividades = is_array($atividades) ? array_values($atividades) : [];
 													
 													$listaAtividades = array();
 													$atividadesTotal = 0;
@@ -601,7 +614,7 @@ class LoopSingleRelacionadas extends LoopSingle
 																$listaAtividades[] = $atividade->term_id;
 															} 
 														}
-													} else {
+													} elseif ($atividadesTotal === 1) {
 														$listaAtividades[] = $atividades[0]->term_id;
 													}
 
@@ -652,11 +665,14 @@ class LoopSingleRelacionadas extends LoopSingle
                                                         } elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
                                                             
                                                             $semana = $campos['dia_da_semana'];
+                                                            $semana = is_array($semana) ? array_values($semana) : [];
                                                             $diasSemana = array();
                                                             $show = array();
 
+                                                            $show = [];
                                                             foreach($semana as $dias){
 
+                                                                $dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
                                                                 $total = count($dias['selecione_os_dias']); 
                                                                 $i = 0;
                                                                 $diasShow = '';
@@ -706,7 +722,7 @@ class LoopSingleRelacionadas extends LoopSingle
                                                             $dataFinal = $dias; 
 
                                                             $dias = '';
-                                                            $show = '';
+                                                            $show = [];
                                                             
                                                         } elseif($campos['tipo_de_data'] == 'periodo'){
                                                             
@@ -734,7 +750,7 @@ class LoopSingleRelacionadas extends LoopSingle
                                                                 $dataFinal = $data;
                                                             } else { // Se nao tiver a final mostra apenas a inicial
                                                                 if($dataInicial){
-																	$dataEvento = explode("-", $dataInicial);
+																	$dataEvento = $dataInicial;
 																	$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 																	$mes = translateMonth($mes);
 																	$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -756,28 +772,32 @@ class LoopSingleRelacionadas extends LoopSingle
 
                                                     if($tipoEvento == 'serie'){
                                                         $participantes = get_field('ceus_participantes',  get_the_ID());
-                                                        $countPart = count($participantes);
-                                                        $countPart = $countPart - 1;
-                                                        
-                                                        $dtInicial = $participantes[0]['data_serie'];
-                                                        $dtFinal = $participantes[$countPart]['data_serie'];
-
-                                                        if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
+                                                        $participantes = is_array($participantes) ? array_values($participantes) : [];
+                                                        $dataFinal = '';
+                                                        if ($participantes !== []) {
+                                                            $countPart = count($participantes);
+                                                            $countPart = $countPart - 1;
                                                             
-                                                            $dataInicial = explode("-", $dtInicial['data']);
-                                                            $dataFinal = explode("-", $dtFinal['data']);
-                                                            $mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
-                                                            $mes = translateMonth($mes);
+                                                            $dtInicial = $participantes[0]['data_serie'];
+                                                            $dtFinal = $participantes[$countPart]['data_serie'];
 
-                                                            $data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+                                                            if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
 
-                                                            $dataFinal = $data;
+                                                                $dataInicial = explode("-", $dtInicial['data']);
+                                                                $dataFinal = explode("-", $dtFinal['data']);
+                                                                $mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
+                                                                $mes = translateMonth($mes);
 
-                                                        } else {
-                                                            $dataFinal = 'Múltiplas Datas';
+                                                                $data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+
+                                                                $dataFinal = $data;
+
+                                                            } else {
+                                                                $dataFinal = 'Múltiplas Datas';
+                                                            }
+
+
                                                         }
-														
-														
                                                     } else if($tipoEvento == 'outro'){
 														$dataFinal = 'Múltiplas Datas';
 													}

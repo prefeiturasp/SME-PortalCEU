@@ -11,7 +11,7 @@ class CamposAdicionais
 	
 		add_filter('manage_users_columns', array($this, 'exibe_cols'));
 		add_filter('manage_users_custom_column', array($this, 'cols_content'), 10, 3);
-		add_filter('manage_users_sortable_columns', array($this, 'cols_sort'));
+		//add_filter('manage_users_sortable_columns', array($this, 'cols_sort'));
 		//add_filter('request', array($this, 'orderby'));
 
 		//add_action('restrict_manage_users', array($this, 'my_restrict_manage_posts'));

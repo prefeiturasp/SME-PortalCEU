@@ -10,6 +10,11 @@ class LoopUnidadesTabs extends LoopUnidades{
 	}
 
 	public function tabUnidade(){
+        // Filtros multisselecao podem estar ausentes ou receber valores escalares na URL.
+        $filtros = [];
+        foreach (['atividades', 'faixaEtaria', 'publico', 'unidades', 'data', 'periodos'] as $filtro) {
+            $filtros[$filtro] = is_array($_GET[$filtro] ?? null) ? $_GET[$filtro] : [];
+        }
         $infoBasicas = get_field('informacoes_basicas');
         //echo "<pre>";
         //print_r($infoBasicas['horario']);
@@ -272,6 +277,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                         <div class="evento-categ border-bottom pb-1">
                                                                 <?php
                                                                         $atividades = get_the_terms( get_the_id(), 'atividades_categories' );
+                                                                        $atividades = is_array($atividades) ? array_values($atividades) : [];
                                                                         
                                                                         $listaAtividades = array();
 
@@ -283,7 +289,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                                     $listaAtividades[] = $atividade->term_id;
                                                                                 } 
                                                                             }
-                                                                        } else {
+                                                                        } elseif ($atividadesTotal === 1) {
                                                                             $listaAtividades[] = $atividades[0]->term_id;
                                                                         }
 
@@ -336,11 +342,14 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                     } elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
                                                                         
                                                                         $semana = $campos['dia_da_semana'];													
+                                                                        $semana = is_array($semana) ? array_values($semana) : [];
                                                         
                                                                         $diasSemana = array();
 
+                                                                        $show = [];
                                                                         foreach($semana as $dias){
 
+                                                                            $dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
                                                                             $total = count($dias['selecione_os_dias']); 
                                                                             $i = 0;
                                                                             $diasShow = '';
@@ -417,7 +426,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                             $dataFinal = $data;
                                                                         } else { // Se nao tiver a final mostra apenas a inicial
                                                                             if($dataInicial){
-                                                                                $dataEvento = explode("-", $dataInicial);
+                                                                                $dataEvento = $dataInicial;
                                                                                 $mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
                                                                                 $mes = translateMonth($mes);
                                                                                 $data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -439,6 +448,9 @@ class LoopUnidadesTabs extends LoopUnidades{
 
                                                                 if($tipoEvento == 'serie'){
                                                                     $participantes = get_field('ceus_participantes',  $eventoID);
+                                                                    $participantes = is_array($participantes) ? array_values($participantes) : [];
+                                                                    $dataFinal = '';
+                                                                    if ($participantes !== []) {
                                                                     $countPart = count($participantes);
                                                                     $countPart = $countPart - 1;
                                                                     
@@ -462,6 +474,7 @@ class LoopUnidadesTabs extends LoopUnidades{
 
                                                                     
                                                                     
+                                                                    }
                                                                 }
                                                             ?>
                                                             <p class="mb-0">
@@ -679,6 +692,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                 <div class="evento-categ border-bottom pb-1">
                                                                     <?php
                                                                         $atividades = get_the_terms( get_the_ID(), 'atividades_categories' );
+                                                                        $atividades = is_array($atividades) ? array_values($atividades) : [];
                                                                         $listaAtividades = array();
                                                                         if($atividades){
                                                                             $atividadesTotal = count($atividades);
@@ -692,7 +706,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                                     $listaAtividades[] = $atividade->term_id;
                                                                                 } 
                                                                             }
-                                                                        } else {
+                                                                        } elseif ($atividadesTotal === 1) {
                                                                             $listaAtividades[] = $atividades[0]->term_id;
                                                                         }
 
@@ -746,11 +760,14 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                         } elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
                                                                             
                                                                             $semana = $campos['dia_da_semana'];
+                                                                            $semana = is_array($semana) ? array_values($semana) : [];
                                                                             $diasSemana = array();
                                                                             $show = array();
 
+                                                                            $show = [];
                                                                             foreach($semana as $dias){
 
+                                                                                $dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
                                                                                 $total = count($dias['selecione_os_dias']); 
                                                                                 $i = 0;
                                                                                 $diasShow = '';
@@ -800,7 +817,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                             $dataFinal = $dias; 
 
                                                                             $dias = '';
-                                                                            $show = '';
+                                                                            $show = [];
                                                                             
                                                                         } elseif($campos['tipo_de_data'] == 'periodo'){
                                                                             
@@ -829,7 +846,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                                 $dataFinal = $data;
                                                                             } else { // Se nao tiver a final mostra apenas a inicial
                                                                                 if($dataInicial){
-                                                                                    $dataEvento = explode("-", $dataInicial);
+                                                                                    $dataEvento = $dataInicial;
                                                                                     $mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
                                                                                     $mes = translateMonth($mes);
                                                                                     $data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -851,6 +868,9 @@ class LoopUnidadesTabs extends LoopUnidades{
 
                                                                     if($tipoEvento == 'serie'){
                                                                         $participantes = get_field('ceus_participantes',  get_the_ID());
+                                                                        $participantes = is_array($participantes) ? array_values($participantes) : [];
+                                                                        $dataFinal = '';
+                                                                        if ($participantes !== []) {
                                                                         $countPart = count($participantes);
                                                                         $countPart = $countPart - 1;
                                                                         
@@ -871,6 +891,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                         } else {
                                                                             $dataFinal = 'Múltiplas Datas';
                                                                         }											
+                                                                        }
                                                                     }
                                                                 ?>
                                                                 <?php
@@ -1000,7 +1021,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                 // Faixa Etaria
                                                 $faixas = get_terms( array( 
                                                     'taxonomy' => 'faixa_categories',
-                                                    //'parent'   => 0,                                
+                                                    'parent'   => 0,
                                                     'hide_empty' => false
                                                 ) );
 
@@ -1036,16 +1057,17 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                         <div class="col-sm-4 mt-3">
                                                             <select name="atividades[]" multiple="multiple" class="ms-list-1">
                                                                 <?php if ( !empty( $terms ) && !is_wp_error( $terms ) ): ?>
-                                                                    <?php foreach( get_terms( 'atividades_categories', array( 'hide_empty' => false, 'parent' => 0 ) ) as $parent_term ) : ?>
+                                                                    <?php foreach( $terms as $parent_term ) : ?>
                                                                         <?php
                                                                             $term_children = get_term_children($parent_term->term_id, 'atividades_categories');
-                                                                            if($term_children):
+                                                                            if(is_array($term_children) && $term_children !== []):
                                                                         ?>
                                                                             <optgroup label="<?= $parent_term->name; ?>">
                                                                                 <?php foreach($term_children as $term): 
                                                                                     $categoria = get_term( $term, 'atividades_categories' );
+                                                                                    if (!($categoria instanceof \WP_Term)) { continue; }
                                                                                 ?>
-                                                                                    <?php if(in_array($categoria->slug, $_GET['atividades'])) :?>
+                                                                                    <?php if(in_array($categoria->slug, $filtros['atividades'])) :?>
                                                                                         <option value="<?= $categoria->slug; ?>" selected><?= $categoria->name; ?></option>
                                                                                     <?php else: ?>
                                                                                         <option value="<?= $categoria->slug; ?>"><?= $categoria->name; ?></option>
@@ -1063,13 +1085,13 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                         <div class="col-sm-4 mt-3">
                                                             <select name="data[]" multiple="multiple" class="ms-list-9"> 
                                                                 <optgroup label="Dia da semana">
-                                                                    <option value="segunda" <?= in_array('segunda', $_GET['data']) ? "selected" : ""; ?>>Segunda</option>
-                                                                    <option value="terca" <?= in_array('terca', $_GET['data']) ? "selected" : ""; ?>>Terça</option>
-                                                                    <option value="quarta" <?= in_array('quarta', $_GET['data']) ? "selected" : ""; ?>>Quarta</option>
-                                                                    <option value="quinta" <?= in_array('quinta', $_GET['data']) ? "selected" : ""; ?>>Quinta</option>
-                                                                    <option value="sexta" <?= in_array('sexta', $_GET['data']) ? "selected" : ""; ?>>Sexta</option>
-                                                                    <option value="sabado" <?= in_array('sabado', $_GET['data']) ? "selected" : ""; ?>>Sábado</option>
-                                                                    <option value="domingo" <?= in_array('domingo', $_GET['data']) ? "selected" : ""; ?>>Domingo</option>
+                                                                    <option value="segunda" <?= in_array('segunda', $filtros['data']) ? "selected" : ""; ?>>Segunda</option>
+                                                                    <option value="terca" <?= in_array('terca', $filtros['data']) ? "selected" : ""; ?>>Terça</option>
+                                                                    <option value="quarta" <?= in_array('quarta', $filtros['data']) ? "selected" : ""; ?>>Quarta</option>
+                                                                    <option value="quinta" <?= in_array('quinta', $filtros['data']) ? "selected" : ""; ?>>Quinta</option>
+                                                                    <option value="sexta" <?= in_array('sexta', $filtros['data']) ? "selected" : ""; ?>>Sexta</option>
+                                                                    <option value="sabado" <?= in_array('sabado', $filtros['data']) ? "selected" : ""; ?>>Sábado</option>
+                                                                    <option value="domingo" <?= in_array('domingo', $filtros['data']) ? "selected" : ""; ?>>Domingo</option>
                                                                 </optgroup>
                                                             </select>
                                                         </div>
@@ -1077,16 +1099,17 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                         <div class="col-sm-4 mt-3 filtros-extra">                                
                                                             <select name="faixaEtaria[]" multiple="multiple" class="ms-list-4">                        
                                                                 <?php if ( !empty( $faixas ) && !is_wp_error( $faixas ) ): ?>
-                                                                    <?php foreach( get_terms( 'faixa_categories', array( 'hide_empty' => false, 'parent' => 0 ) ) as $parent_term ) : ?>
+                                                                    <?php foreach( $faixas as $parent_term ) : ?>
                                                                         <?php
                                                                             $term_children = get_term_children($parent_term->term_id, 'faixa_categories');
-                                                                            if($term_children):
+                                                                            if(is_array($term_children) && $term_children !== []):
                                                                         ?>
                                                                             <optgroup label="<?= $parent_term->name; ?>">
                                                                                 <?php foreach($term_children as $term): 
                                                                                     $faixa_etaria = get_term( $term, 'faixa_categories' );
+                                                                                    if (!($faixa_etaria instanceof \WP_Term)) { continue; }
                                                                                 ?>
-                                                                                    <?php if(in_array($faixa_etaria->slug, $_GET['faixaEtaria'])) :?>                                                    	
+                                                                                    <?php if(in_array($faixa_etaria->slug, $filtros['faixaEtaria'])) :?>                                                    	
                                                                                         <option value="<?= $faixa_etaria->slug; ?>" selected><?= $faixa_etaria->name; ?></option>
                                                                                     <?php else: ?>
                                                                                         <option value="<?= $faixa_etaria->slug; ?>"><?= $faixa_etaria->name; ?></option>
@@ -1104,8 +1127,8 @@ class LoopUnidadesTabs extends LoopUnidades{
 
                                                         <div class="col-sm-4 mt-3 filtros-extra">
                                                             <select name="publico[]" multiple="multiple" class="ms-list-3">                        
-                                                                <?php foreach ($publicos as $publico): ?>
-                                                                    <?php if(in_array($publico->slug, $_GET['publico'])) :?>										
+                                                                <?php foreach (is_array($publicos) ? $publicos : [] as $publico): ?>
+                                                                    <?php if(in_array($publico->slug, $filtros['publico'])) :?>										
                                                                         <option value="<?php echo $publico->slug; ?>" selected><?php echo $publico->name; ?></option>
                                                                     <?php else: ?>
                                                                         <option value="<?php echo $publico->slug; ?>"><?php echo $publico->name; ?></option>
@@ -1157,18 +1180,18 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                         <div class="col-sm-8 mt-3 filtros-extra">
                                                             <div id='date-range'>
                                                                 <div class="input-daterange input-group" id="datepicker">
-                                                                    <input type="text" class="input-sm form-control" name="start" value="<?= $_GET['start']; ?>" placeholder="Data" />
+                                                                    <input type="text" class="input-sm form-control" name="start" value="<?= esc_attr(is_string($_GET['start'] ?? null) ? $_GET['start'] : ''); ?>" placeholder="Data" />
                                                                     <span class="input-group-addon px-2">Até</span>
-                                                                    <input type="text" class="input-sm form-control" name="end" value="<?= $_GET['end']; ?>" placeholder="Data" />
+                                                                    <input type="text" class="input-sm form-control" name="end" value="<?= esc_attr(is_string($_GET['end'] ?? null) ? $_GET['end'] : ''); ?>" placeholder="Data" />
                                                                 </div>
                                                             </div>
                                                         </div>
 
                                                         <div class="col-sm-4 mt-3 filtros-extra">
                                                             <select name="periodos[]" multiple="multiple" class="ms-list-8">
-                                                                <option value='manha' <?= in_array('manha', $_GET['periodos']) ? "selected" : ""; ?>>Manhã</option>
-                                                                <option value='tarde' <?= in_array('tarde', $_GET['periodos']) ? "selected" : ""; ?>>Tarde</option>
-                                                                <option value='noite' <?= in_array('noite', $_GET['periodos']) ? "selected" : ""; ?>>Noite</option>                        
+                                                                <option value='manha' <?= in_array('manha', $filtros['periodos']) ? "selected" : ""; ?>>Manhã</option>
+                                                                <option value='tarde' <?= in_array('tarde', $filtros['periodos']) ? "selected" : ""; ?>>Tarde</option>
+                                                                <option value='noite' <?= in_array('noite', $filtros['periodos']) ? "selected" : ""; ?>>Noite</option>                        
                                                             </select>
                                                         </div>
                                                     </div>
@@ -1291,6 +1314,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                 <div class="evento-categ border-bottom pb-1">
                                                                     <?php
                                                                         $atividades = get_the_terms( get_the_ID(), 'atividades_categories' );
+                                                                        $atividades = is_array($atividades) ? array_values($atividades) : [];
                                                                         $listaAtividades = array();
 
                                                                         if($atividades){
@@ -1305,7 +1329,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                                     $listaAtividades[] = $atividade->term_id;
                                                                                 } 
                                                                             }
-                                                                        } else {
+                                                                        } elseif ($atividadesTotal === 1) {
                                                                             $listaAtividades[] = $atividades[0]->term_id;
                                                                         }
 
@@ -1359,11 +1383,14 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                         } elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
                                                                             
                                                                             $semana = $campos['dia_da_semana'];
+                                                                            $semana = is_array($semana) ? array_values($semana) : [];
                                                                             $diasSemana = array();
                                                                             $show = array();
 
+                                                                            $show = [];
                                                                             foreach($semana as $dias){
 
+                                                                                $dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
                                                                                 $total = count($dias['selecione_os_dias']); 
                                                                                 $i = 0;
                                                                                 $diasShow = '';
@@ -1413,7 +1440,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                             $dataFinal = $dias; 
 
                                                                             $dias = '';
-                                                                            $show = '';
+                                                                            $show = [];
                                                                             
                                                                         } elseif($campos['tipo_de_data'] == 'periodo'){
                                                                             
@@ -1442,7 +1469,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                                 $dataFinal = $data;
                                                                             } else { // Se nao tiver a final mostra apenas a inicial
                                                                                 if($dataInicial){
-                                                                                    $dataEvento = explode("-", $dataInicial);
+                                                                                    $dataEvento = $dataInicial;
                                                                                     $mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
                                                                                     $mes = translateMonth($mes);
                                                                                     $data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -1464,6 +1491,9 @@ class LoopUnidadesTabs extends LoopUnidades{
 
                                                                     if($tipoEvento == 'serie'){
                                                                         $participantes = get_field('ceus_participantes',  get_the_ID());
+                                                                        $participantes = is_array($participantes) ? array_values($participantes) : [];
+                                                                        $dataFinal = '';
+                                                                        if ($participantes !== []) {
                                                                         $countPart = count($participantes);
                                                                         $countPart = $countPart - 1;
                                                                         
@@ -1484,6 +1514,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                         } else {
                                                                             $dataFinal = 'Múltiplas Datas';
                                                                         }											
+                                                                        }
                                                                     }
                                                                 ?>
                                                                 <?php
@@ -1715,6 +1746,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                             <div class="evento-categ border-bottom pb-1">
                                                                 <?php
                                                                     $atividades = get_the_terms( get_the_ID(), 'atividades_categories' );
+                                                                    $atividades = is_array($atividades) ? array_values($atividades) : [];
                                                                     $listaAtividades = array();
 
                                                                     if($atividades){
@@ -1729,7 +1761,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                                 $listaAtividades[] = $atividade->term_id;
                                                                             } 
                                                                         }
-                                                                    } else {
+                                                                    } elseif ($atividadesTotal === 1) {
                                                                         $listaAtividades[] = $atividades[0]->term_id;
                                                                     }
 
@@ -1783,11 +1815,14 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                     } elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
                                                                         
                                                                         $semana = $campos['dia_da_semana'];
+                                                                        $semana = is_array($semana) ? array_values($semana) : [];
                                                                         $diasSemana = array();
                                                                         $show = array();
 
+                                                                        $show = [];
                                                                         foreach($semana as $dias){
 
+                                                                            $dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
                                                                             $total = count($dias['selecione_os_dias']); 
                                                                             $i = 0;
                                                                             $diasShow = '';
@@ -1837,7 +1872,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                         $dataFinal = $dias; 
 
                                                                         $dias = '';
-                                                                        $show = '';
+                                                                        $show = [];
                                                                         
                                                                     } elseif($campos['tipo_de_data'] == 'periodo'){
                                                                         
@@ -1866,7 +1901,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                             $dataFinal = $data;
                                                                         } else { // Se nao tiver a final mostra apenas a inicial
                                                                             if($dataInicial){
-                                                                                $dataEvento = explode("-", $dataInicial);
+                                                                                $dataEvento = $dataInicial;
                                                                                 $mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
                                                                                 $mes = translateMonth($mes);
                                                                                 $data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -1888,6 +1923,9 @@ class LoopUnidadesTabs extends LoopUnidades{
 
                                                                 if($tipoEvento == 'serie'){
                                                                     $participantes = get_field('ceus_participantes',  get_the_ID());
+                                                                    $participantes = is_array($participantes) ? array_values($participantes) : [];
+                                                                    $dataFinal = '';
+                                                                    if ($participantes !== []) {
                                                                     $countPart = count($participantes);
                                                                     $countPart = $countPart - 1;
                                                                     
@@ -1908,6 +1946,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                                                     } else {
                                                                         $dataFinal = 'Múltiplas Datas';
                                                                     }											
+                                                                    }
                                                                 }
                                                             ?>
                                                             <?php
@@ -2285,7 +2324,7 @@ class LoopUnidadesTabs extends LoopUnidades{
                                 <?php                                
                                     $princial[] = get_field('foto_principal_do_ceu');
                                     $seconds = get_field('outras_fotos_da_unidade');
-                                    if(!$seconds){
+                                    if(!is_array($seconds)){
                                         $seconds = array();
                                     }
                                     $todasFotos = array_merge($princial, $seconds);
