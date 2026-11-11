@@ -120,7 +120,8 @@ foreach($eventos as $key => $value){
 
 	if($value['tipo_de_evento_tipo'] == 'serie'){
 		$local = '';
-		$ceus = $value['ceus_participantes'];
+		$ceus = $value['ceus_participantes'] ?? [];
+		$ceus = is_array($ceus) ? array_values($ceus) : [];
 		if($ceus){
 			$i = 0;
 			foreach($ceus as $ceu){
@@ -155,12 +156,13 @@ foreach($eventos as $key => $value){
 	} elseif($value['data_tipo_de_data'] == 'periodo') {
 		$data = inverteData($value['data_data']) . ' à ' . inverteData($value['data_data_final']);
 	} elseif($value['data_tipo_de_data'] == 'semana'){
-		$semana = $value['data_dia_da_semana'];
+		$semana = $value['data_dia_da_semana'] ?? [];
+		$semana = is_array($semana) ? $semana : [];
 		$diasSemana = array();
-		$show = array();
-
+		$show = [];
 		foreach($semana as $dias){
 
+			$dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
 			$total = count($dias['selecione_os_dias']); 
 			$i = 0;
 			$diasShow = '';
@@ -198,26 +200,30 @@ foreach($eventos as $key => $value){
 		}
 		$data = $dias;
 		$dias = '';
-        $show = '';
+        $show = [];
 
 	} else {
 		$data = '';
 	}
 
 	if($value['tipo_de_evento_tipo'] == 'serie'){
-		$participantes = $value['ceus_participantes'];
-		$countPart = count($participantes);
-		$countPart = $countPart - 1;
-		
-		$dtInicial = $participantes[0]['data_serie'];
-		$dtFinal = $participantes[$countPart]['data_serie'];
-
-		if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
+		$participantes = $value['ceus_participantes'] ?? [];
+		$participantes = is_array($participantes) ? array_values($participantes) : [];
+		$data = '';
+		if ($participantes !== []) {
+			$countPart = count($participantes);
+			$countPart = $countPart - 1;
 			
-			$data = inverteData($dtInicial['data']) . ' à ' . inverteData($dtFinal['data']);	
+			$dtInicial = $participantes[0]['data_serie'];
+			$dtFinal = $participantes[$countPart]['data_serie'];
 
-		} else {
-			$data = 'Múltiplas Datas';
+			if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
+
+				$data = inverteData($dtInicial['data']) . ' à ' . inverteData($dtFinal['data']);
+
+			} else {
+				$data = 'Múltiplas Datas';
+			}
 		}
 	}
 
@@ -226,7 +232,8 @@ foreach($eventos as $key => $value){
 	if($tipo == 'semana'){
 		$status = 'Atividades permanentes';
 	} elseif($tipoEvento == 'serie'){					
-		$participantes = $value['ceus_participantes'];
+		$participantes = $value['ceus_participantes'] ?? [];
+		$participantes = is_array($participantes) ? array_values($participantes) : [];
 		if($participantes){
 			$countPart = count($participantes);
 			$countPart = $countPart - 1;

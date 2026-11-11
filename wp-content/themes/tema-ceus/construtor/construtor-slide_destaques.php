@@ -1,4 +1,7 @@
-<?php $slides = get_sub_field('slide'); ?>
+<?php
+$slides = get_sub_field('slide');
+$slides = is_array($slides) ? array_values($slides) : [];
+?>
 
 <div class="slide-principal mt-3 mb-3">
     <div class="container">
@@ -45,6 +48,7 @@
                         
                     } else {
                         $ceus = get_field('ceus_participantes', $slide->ID);
+                        $ceus = is_array($ceus) ? array_values($ceus) : [];
                         $verify = 0;
                         foreach($ceus as $ceu){
                             $tipoData = $ceu['data_serie']['tipo_de_data'];
@@ -120,6 +124,7 @@
                                                 <?php
                                                     $tipoEvento = get_field('tipo_de_evento_tipo', $slide->ID);
                                                     $atividades = get_the_terms( $slide->ID, 'atividades_categories' );
+                                                    $atividades = is_array($atividades) ? array_values($atividades) : [];
                                                     $listaAtividades = array();
                                                     if($atividades){
                                                         foreach($atividades as $atividade){
@@ -215,7 +220,7 @@
                                                             
                                                         } else { // Se nao tiver a final mostra apenas a inicial
                                                             if($dataInicial){
-                                                                $dataEvento = explode("-", $dataInicial);
+                                                                $dataEvento = $dataInicial;
                                                                 $mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
                                                                 $mes = translateMonth($mes);
                                                                 $data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -233,12 +238,15 @@
 
                                                     } elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
                                                         
-                                                        $semana = $campos['dia_da_semana'];													
+                                                        $semana = $campos['dia_da_semana'];
+                                                        $semana = is_array($semana) ? array_values($semana) : [];
                                                 
                                                         $diasSemana = array();
 
+                                                        $show = [];
                                                         foreach($semana as $dias){
 
+                                                            $dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
                                                             $total = count($dias['selecione_os_dias']); 
                                                             $i = 0;
                                                             $diasShow = '';
@@ -290,26 +298,30 @@
                                                 }
                                                 if($tipoEvento == 'serie'){
                                                     $participantes = get_field('ceus_participantes',  $slide->ID);
-                                                    $countPart = count($participantes);
-                                                    $countPart = $countPart - 1;
-                                                    
-                                                    $dtInicial = $participantes[0]['data_serie'];
-                                                    $dtFinal = $participantes[$countPart]['data_serie'];
-
-                                                    if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
+                                                    $participantes = is_array($participantes) ? array_values($participantes) : [];
+                                                    $dataFinal = '';
+                                                    if ($participantes !== []) {
+                                                        $countPart = count($participantes);
+                                                        $countPart = $countPart - 1;
                                                         
-                                                        $dataInicial = explode("-", $dtInicial['data']);
-                                                        $dataFinal = explode("-", $dtFinal['data']);
-                                                        $mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
-                                                        $mes = translateMonth($mes);
+                                                        $dtInicial = $participantes[0]['data_serie'];
+                                                        $dtFinal = $participantes[$countPart]['data_serie'];
 
-                                                        $data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+                                                        if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
 
-                                                        $dataFinal = $data;
+                                                            $dataInicial = explode("-", $dtInicial['data']);
+                                                            $dataFinal = explode("-", $dtFinal['data']);
+                                                            $mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
+                                                            $mes = translateMonth($mes);
 
-                                                    } else {
-                                                        $dataFinal = 'Múltiplas Datas';
-                                                    }											
+                                                            $data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+
+                                                            $dataFinal = $data;
+
+                                                        } else {
+                                                            $dataFinal = 'Múltiplas Datas';
+                                                        }
+                                                    }
                                                 }
                                             ?>
                                             <p class="mb-0">

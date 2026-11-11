@@ -1114,16 +1114,23 @@ add_filter( 'ure_show_additional_capabilities_section', '__return_false' );
 
 // Filtra as unidades que grupo pertence
 function wp37_limit_posts_to_author($query) {
+	// Os filtros da URL sao opcionais e devem ser valores textuais.
+	$parametros = [];
+	foreach (['grupo_id', 'post_type', 'filter', 'list'] as $parametro) {
+		$parametros[$parametro] = is_string($_GET[$parametro] ?? null) ? $_GET[$parametro] : '';
+	}
+
 
 	// pega as informacoes do usuario logado
 	$user = wp_get_current_user();
 	if ( $query->is_main_query() ) {
-		if( $_GET['grupo_id'] != '')  {
+		if( $parametros['grupo_id'] != '')  {
 		
-			$grupo = $_GET['grupo_id'];
+			$grupo = $parametros['grupo_id'];
+			$pages = [];
 	
 			if($grupo && $grupo != ''){   
-				if($_GET['post_type'] == 'unidade'){
+				if($parametros['post_type'] == 'unidade'){
 					$pages = get_post_meta($grupo, 'unidades', true);
 				}
 			}
@@ -1136,7 +1143,7 @@ function wp37_limit_posts_to_author($query) {
 		}
 
 		// 	filtra as unidades pelo grupo pertencente
-		if( $_GET['filter'] == 'grupo' && ($user->roles[0] == 'contributor' || $user->roles[0] == 'editor'))  {
+		if( $parametros['filter'] == 'grupo' && (($user->roles[0] ?? '') == 'contributor' || ($user->roles[0] ?? '') == 'editor'))  {
 			$variable = get_user_meta($user->ID,'grupo',true);		
 			$pages = array();
 			if($variable && $variable !=''){
@@ -1159,7 +1166,7 @@ function wp37_limit_posts_to_author($query) {
 	}
 	
 	// 	filtra os eventos pelo grupo pertencente
-	if( $_GET['filter'] == 'grupo' && $_GET['list'] == 'evento' && ($user->roles[0] == 'contributor' || $user->roles[0] == 'editor') ){
+	if( $parametros['filter'] == 'grupo' && $parametros['list'] == 'evento' && (($user->roles[0] ?? '') == 'contributor' || ($user->roles[0] ?? '') == 'editor') ){
 		if ( $query->is_main_query() ) {
 			global $wpdb;
 			
@@ -1254,7 +1261,7 @@ add_filter('views_edit-post', 'wp38_add_movies_filter');
 // Unifica o array multidimensional em array unico
 function array_flatten($array) { 
 	if (!is_array($array)) { 
-	  return FALSE; 
+	  return [];
 	} 
 	$result = array(); 
 	foreach ($array as $key => $value) { 
@@ -1307,7 +1314,7 @@ function populateUserGroups( $field ){
 			'post_type' => 'unidade',
 			'posts_per_page'    =>  -1,
 			'orderby' => 'title',
-    		'order'   => 'ASC',
+			'order'   => 'ASC',
 			'post_status' => array('publish', 'pending'),
 			'post__not_in' => array( 31675 )
 		);
@@ -2074,7 +2081,7 @@ function users_own_attachments( $wp_query_obj )
 		$role_object->add_cap( 'edit_post' );
 	}*/
 
-	$user = $user ? new WP_User( $user ) : wp_get_current_user();
+	$user = wp_get_current_user();
 
 	//echo "<pre>";
 	//print_r( $user->allcaps );
@@ -2155,9 +2162,9 @@ function hide_unidade_categ()
 function remove_core_updates(){
 	global $wp_version;return(object) array('last_checked'=> time(),'version_checked'=> $wp_version,);
 }
-add_filter('pre_site_transient_update_core','remove_core_updates'); //hide updates for WordPress itself
-add_filter('pre_site_transient_update_plugins','remove_core_updates'); //hide updates for all plugins
-add_filter('pre_site_transient_update_themes','remove_core_updates'); //hide updates for all themes
+//add_filter('pre_site_transient_update_core','remove_core_updates'); //hide updates for WordPress itself
+//add_filter('pre_site_transient_update_plugins','remove_core_updates'); //hide updates for all plugins
+//add_filter('pre_site_transient_update_themes','remove_core_updates'); //hide updates for all themes
 
 
 ###########################################################################################################
@@ -2166,6 +2173,12 @@ add_filter('pre_site_transient_update_themes','remove_core_updates'); //hide upd
 
 add_action('restrict_manage_posts','filtering_unidade',10);
 function filtering_unidade($post_type){
+	// Os filtros da URL sao opcionais e devem ser valores textuais.
+	$parametros = [];
+	foreach (['search_unidade', 'list', 'post_status', 'val'] as $parametro) {
+		$parametros[$parametro] = is_string($_GET[$parametro] ?? null) ? $_GET[$parametro] : '';
+	}
+
     
 	if('post' !== $post_type){
       return; //filter your post
@@ -2173,7 +2186,7 @@ function filtering_unidade($post_type){
 
 	$user = wp_get_current_user();
 
-	if($user->roles[0] == 'administrator'){		
+	if(($user->roles[0] ?? '') == 'administrator'){
 
 		$unidades = array();
 		$i = 0;
@@ -2204,7 +2217,7 @@ function filtering_unidade($post_type){
 		
 	}
 	
-	if($user->roles[0] == 'contributor' || $user->roles[0] == 'editor'){		
+	if(($user->roles[0] ?? '') == 'contributor' || ($user->roles[0] ?? '') == 'editor'){
 		
 		$grupos = get_user_meta($user->ID,'grupo',true);		
 		$allUnidades = array();
@@ -2229,17 +2242,17 @@ function filtering_unidade($post_type){
       
 
 	// Unidade Selecionada
-	$unidadeSelect = $_GET['search_unidade'];
+	$unidadeSelect = $parametros['search_unidade'];
 
    	//build a custom dropdown list of values to filter by
    	echo '<select id="my-loc" name="search_unidade">';
 		
-		$selecionado = ($_GET['search_unidade'] == 'all') ? ' selected="selected"':'';
+		$selecionado = ($parametros['search_unidade'] == 'all') ? ' selected="selected"':'';
 		echo '<option value="all" ' . $selecionado . '>Todas as Unidades</option>';	
 
-		if($user->roles[0] == 'contributor' || $user->roles[0] == 'editor'){
-			$selecionado = ($_GET['list'] == 'evento' && $_GET['post_status'] != 'pending') ? ' selected="selected"':'';
-			$selecionado = ($_GET['list'] == 'evento' && $_GET['val'] == 'filtro') ? ' selected="selected"':'';
+		if(($user->roles[0] ?? '') == 'contributor' || ($user->roles[0] ?? '') == 'editor'){
+			$selecionado = ($parametros['list'] == 'evento' && $parametros['post_status'] != 'pending') ? ' selected="selected"':'';
+			$selecionado = ($parametros['list'] == 'evento' && $parametros['val'] == 'filtro') ? ' selected="selected"':'';
 			echo '<option value="minhas-unidades" ' . $selecionado . '>Minhas Unidades</option>';
 		}
 			
@@ -2261,17 +2274,23 @@ if(is_admin() && $pagenow == 'edit.php'){
 // Filtra as unidades que grupo pertence
 add_filter('pre_get_posts', 'limit_events_group');
 function limit_events_group($query) {
+	// Os filtros da URL sao opcionais e devem ser valores textuais.
+	$parametros = [];
+	foreach (['search_unidade', 'post_status'] as $parametro) {
+		$parametros[$parametro] = is_string($_GET[$parametro] ?? null) ? $_GET[$parametro] : '';
+	}
+
 
 	// pega as informacoes do usuario logado
 	$user = wp_get_current_user();
 
 	// 	filtra as unidades pelo grupo pertencente
-	if( $_GET['search_unidade'] && $_GET['search_unidade'] != '' && $_GET['search_unidade'] != 'all' )  {
+	if( $parametros['search_unidade'] && $parametros['search_unidade'] != '' && $parametros['search_unidade'] != 'all' )  {
 
-		if($_GET['search_unidade'] == 'minhas-unidades' && $_GET['post_status'] == 'pending'){
+		if($parametros['search_unidade'] == 'minhas-unidades' && $parametros['post_status'] == 'pending'){
 			wp_redirect( 'edit.php?list=evento&filter=grupo&post_status=pending&val=filtro' ); 
 			exit;
-		} elseif($_GET['search_unidade'] == 'minhas-unidades' && $_GET['post_status'] != 'pending'){
+		} elseif($parametros['search_unidade'] == 'minhas-unidades' && $parametros['post_status'] != 'pending'){
 			wp_redirect( 'edit.php?list=evento&filter=grupo' ); 
 			exit;
 		}
@@ -2279,12 +2298,12 @@ function limit_events_group($query) {
 		
 		if($query->is_main_query()){
 
-			if($user->roles[0] == 'contributor' || $user->roles[0] == 'editor'){
+			if(($user->roles[0] ?? '') == 'contributor' || ($user->roles[0] ?? '') == 'editor'){
 				$meta_query = array(
 					'relation' => 'OR',
 					array(
 						'key'     => 'localizacao',
-						'value'   => $_GET['search_unidade'],
+						'value'   => $parametros['search_unidade'],
 					),
 				);
 			} else {
@@ -2293,12 +2312,12 @@ function limit_events_group($query) {
 					'relation' => 'OR',
 					array(
 						'key'     => 'localizacao',
-						'value'   => $_GET['search_unidade'],
+						'value'   => $parametros['search_unidade'],
 					),					
 					array(
 						'key'		=> 'ceus_participantes_$_localizacao_serie',
 						'compare'	=> '=',
-						'value'		=> $_GET['search_unidade'],
+						'value'		=> $parametros['search_unidade'],
 					),
 				);
 
@@ -2306,7 +2325,7 @@ function limit_events_group($query) {
 			
 			$query->set( 'meta_query', $meta_query );
 			//$query->set( 'meta_key', 'localizacao' );
-        	//$query->set( 'meta_value', $_GET['search_unidade'] );
+			//$query->set( 'meta_value', $parametros['search_unidade'] );
 		}	
 
 	}
@@ -2510,7 +2529,7 @@ function hide_counter_users() {
 
 function admin_color_scheme() {
 	global $_wp_admin_css_colors;
-	$_wp_admin_css_colors = 0;
+	$_wp_admin_css_colors = array();
 }
 add_action('admin_head', 'admin_color_scheme');
 add_filter( 'login_display_language_dropdown', '__return_false' );
@@ -2521,7 +2540,7 @@ if ( ! function_exists( 'cor_remove_personal_options' ) ) {
 	function cor_remove_personal_options( $subject ) {
 		
 		global $_wp_admin_css_colors;
-		$_wp_admin_css_colors = 0;
+		$_wp_admin_css_colors = array();
 
 		$subject = preg_replace('#<h2>'.__("Personal Options").'</h2>#s', '', $subject, 1); // Remove the "Personal Options" title
 		$subject = preg_replace('#<tr class="user-rich-editing-wrap(.*?)</tr>#s', '', $subject, 1); // Remove the "Visual Editor" field
@@ -2553,24 +2572,27 @@ global $pagenow;
 global $current_user;
 if (( $pagenow == 'post.php' ) || (get_post_type() == 'post')) {
 
-    $evento = $_GET['post']; // Pegar ID do evento (post)
-	if(get_post_type($_GET['post']) == 'unidade'){
-		$unidade = $_GET['post'];
+    $evento = isset($_GET['post']) && is_scalar($_GET['post']) ? absint($_GET['post']) : get_the_ID(); // Pegar ID do evento (post)
+	if(get_post_type($evento) == 'unidade'){
+		$unidade = $evento;
 	} else {
 		$unidade = get_field('localizacao', $evento); // Pegar a localizacao atribuida 
 	}
     
         
-    $user = get_currentuserinfo(); // Pegar informacoes do usuario logado
+    $user = wp_get_current_user(); // Pegar informacoes do usuario logado
 
-	if($user->roles[0] != 'administrator'){
+	if(($user->roles[0] ?? '') != 'administrator'){
 		$grupos = get_field('grupo', 'user_' . $user->ID); // Grupo do usuario
 	
 		$unidades = array();
 
 		if($grupos && $grupos != ''){
 			foreach($grupos as $grupo){
-				$unidades[] = get_field('unidades', $grupo);
+				$unidadesDoGrupo = get_field('unidades', $grupo);
+				if (is_array($unidadesDoGrupo)) {
+					$unidades[] = $unidadesDoGrupo;
+				}
 			}
 		}
 
@@ -2928,6 +2950,7 @@ function eventos_expirados( $field ) {
 				
 			} else {
 				$ceus = get_field('ceus_participantes', $slide);
+				$ceus = is_array($ceus) ? array_values($ceus) : [];
 				$verify = 0;				
 
 				foreach($ceus as $ceu){
@@ -3067,6 +3090,7 @@ function retornar_eventos_destaques($request) {
 				
 			} else {
 				$ceus = get_field('ceus_participantes', $slide->ID);
+				$ceus = is_array($ceus) ? array_values($ceus) : [];
 				$verify = 0;
 				foreach($ceus as $ceu){
 					$tipoData = $ceu['data_serie']['tipo_de_data'];
@@ -3185,7 +3209,7 @@ function retornar_eventos_destaques($request) {
 					
 				} else { // Se nao tiver a final mostra apenas a inicial
 					if($dataInicial){
-						$dataEvento = explode("-", $dataInicial);
+						$dataEvento = $dataInicial;
 						$mes = date('M', mktime(0, 0, 0, $dataEvento[1], 10));
 						$mes = translateMonth($mes);
 						$data = $dataEvento[2] . " " . $mes . " " . $dataEvento[0];
@@ -3203,12 +3227,15 @@ function retornar_eventos_destaques($request) {
 
 			} elseif($campos['tipo_de_data'] == 'semana'){ // se for do tipo semana
 				
-				$semana = $campos['dia_da_semana'];													
+				$semana = $campos['dia_da_semana'];
+				$semana = is_array($semana) ? array_values($semana) : [];
 		
 				$diasSemana = array();
 
+				$show = [];
 				foreach($semana as $dias){
 
+					$dias['selecione_os_dias'] = is_array($dias['selecione_os_dias'] ?? null) ? $dias['selecione_os_dias'] : [];
 					$total = count($dias['selecione_os_dias']); 
 					$i = 0;
 					$diasShow = '';
@@ -3259,26 +3286,30 @@ function retornar_eventos_destaques($request) {
 
 			if($tipoEvento == 'serie'){
 				$participantes = get_field('ceus_participantes',  $slide->ID);
-				$countPart = count($participantes);
-				$countPart = $countPart - 1;
-				
-				$dtInicial = $participantes[0]['data_serie'];
-				$dtFinal = $participantes[$countPart]['data_serie'];
-
-				if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
+				$participantes = is_array($participantes) ? array_values($participantes) : [];
+				$dataFinal = '';
+				if ($participantes !== []) {
+					$countPart = count($participantes);
+					$countPart = $countPart - 1;
 					
-					$dataInicial = explode("-", $dtInicial['data']);
-					$dataFinal = explode("-", $dtFinal['data']);
-					$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
-					$mes = translateMonth($mes);
+					$dtInicial = $participantes[0]['data_serie'];
+					$dtFinal = $participantes[$countPart]['data_serie'];
 
-					$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+					if($dtInicial['tipo_de_data'] == 'data' && $dtFinal['tipo_de_data'] == 'data'){
 
-					$dataFinal = $data;
+						$dataInicial = explode("-", $dtInicial['data']);
+						$dataFinal = explode("-", $dtFinal['data']);
+						$mes = date('M', mktime(0, 0, 0, $dataFinal[1], 10));
+						$mes = translateMonth($mes);
 
-				} else {
-					$dataFinal = 'Múltiplas Datas';
-				}											
+						$data = $dataInicial[2] . " a " .  $dataFinal[2] . " " . $mes . " " . $dataFinal[0];
+
+						$dataFinal = $data;
+
+					} else {
+						$dataFinal = 'Múltiplas Datas';
+					}
+				}
 			}
 
 		}
