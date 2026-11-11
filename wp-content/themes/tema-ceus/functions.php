@@ -2460,10 +2460,10 @@ add_action('pre_get_users', 'modify_user_list');
 
 // Mostrar os grupos que o usuario pertence no seletor de grupos de usuarios
 add_filter('acf/fields/relationship/query/key=field_5f9843469209b', 'filter_groups_by_user', 10, 3);
-function filter_groups_by_user() {
+function filter_groups_by_user($args, $field, $post_id) {
     $user = wp_get_current_user(); 
 	$user_id = $user->ID; 
-	$args['post_type'] = 'wporg_unidades';
+	$args['post_type'] = array('wporg_unidades');
 
 	if( in_array('editor', $user->roles) ){
 		$user_group = get_user_meta($user_id, 'grupo', true);
